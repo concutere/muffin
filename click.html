@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!--script src="riffwave.js"></script-->
+    
+    <script>
+      var sampleRate = 44100;
+      var channels = 2; //stereo
+      
+      var smoothingTime = .85; 
+      function getSampleBuffer(ctx,sec) {
+        if (isNaN(sec)) sec = 1;
+        var frames = sec * ctx.sampleRate;
+        var b = ctx.createBuffer(2, frames, ctx.sampleRate);
+
+        for (var channel = 0; channel < channels;channel++) {
+          var curb = b.getChannelData(channel);
+          for (var i = 0; i < frames; i++) {
+            curb[i] = Math.random() * 2 - 1;
+          }
+        }
+        
+        return b;
+      }
+      
+      function testctx() {
+        var ctx = new AudioContext();
+        var src = ctx.createBufferSource();
+        src.buffer = getSampleBuffer(ctx);
+        src.connect(ctx.destination);
+        src.start();
+      }
+      
+      function stream() {
+        var ctx = new AudioContext();
+        var gain = ctx.createGain();
+        var filter = ctx.createBiquadFilter();
+        var compressor = ctx.createDynamicsCompressor();
+        var analyser = ctx.createAnalyser();
+        //var delay = ctx.createDelay();
+        var oscillator = ctx.createOscillator();
+        
+        /*
+          FUDGE CONSTANTS HERE!!!
+        */
+        analyser.smoothingTimeConstant=0.5;
+        gain.gain.value=1;
+        oscillator.frequency.value = 220;
+        oscillator.type = 'triangle';
+        //filter.frequency.value = 440;
+
+        oscillator.connect(compressor);//filter);
+        //filter.connect(compressor);
+        compressor.connect(analyser);
+        gain.connect(analyser);
+        analyser.connect(ctx.destination);
+          var up = true;
+        var step  = 10;
+        var next = 230;
+        var max = 220;
+        var min = 440;
+        var flips=0;
+        var cancelid;
+        var recur = function recur() {
+          if (flips > 3) {
+            clearInterval(cancelid);
+            oscillator.stop();
+            return;
+          }
+          console.log(next);
+          oscillator.frequency.value = next;
+          
+          if (next == max || next == min) {
+            up = !up;
+            flips++;
+          }
+          next += step * (up ? 1 : -1);
+        };
+
+        oscillator.start();
+        cancelid= setInterval(recur, 100);
+        return cancelid
+      }
+    </script>
+    <script>
+    
+function bisect(a,b) {
+  return [Math.abs(b[0] - a[0]),Math.abs(b[1] - a[1])];
+}
+function hzData(hz,ms) {
+  var data = [];
+
+  var sampleRate = 44100;
+  for (var i = 0; i < sampleRate * (ms / 1000); ) {
+    data[i++] = (128 + 127 * Math.sin(i * 2 * Math.PI * hz / sampleRate));
+    data[i++] = (128 + 127 * Math.sin(i * .2 * Math.PI * hz / sampleRate));
+  }
+
+  return data;
+}
+function noteData(note,ms) {
+  return hzData(440.0 * Math.pow(2,(note-69)/12.0), ms);
+}
+    function rndSound() {
+      var seq = new Array();
+      var hz = 220;//5; // 69  == 440hz == A4 tuning pitch
+      var notes=[];
+      while (notes.length < 300) { //seq.length < 100000) {
+        seq=seq.concat(hzData(hz,30));
+        notes.push(hz);
+        hz =Math.pow(hz,1025/1024);//+= 1;//*= 27/25;
+//        console.log(hz);
+      }
+      document.getElementById('boo').style.backgroundColor='blue';
+      return seq;
+    }
+
+    function playback(sound) {
+      var audio = new Audio(); // create the HTML5 audio element
+      var wave = new RIFFWAVE(); // create an empty wave file
+
+      wave.header.sampleRate = 44100;
+      wave.header.numChannels = 2;
+      //wave.header.bitsPerSample = 8;
+      wave.Make(sound); // make the wave file
+      audio.src = wave.dataURI; // set audio source
+            document.getElementById('boo').style.backgroundColor='purple';
+      audio.play(); // we should hear two tones one on each speaker
+      //sample();
+    }
+    
+    function getData() {
+      var i = 0;
+      var data = [];
+      while (i<100000) { 
+        data[i++] = 128+Math.round(127*Math.sin(i/10)); // left speaker
+        data[i++] = 128+Math.round(127*Math.sin(i/10)); // right speaker
+      }
+      return data;
+    }      
+    var data;
+    var wave;
+    function sample() {
+      var audio = new Audio(); // create the HTML5 audio element
+      //var wave = new RIFFWAVE(); // create an empty wave file
+      
+      if (data == null || data.length < 1) {
+        data = getData();
+        wave = new RIFFWAVE();
+        wave.header.sampleRate = 44100; // set sample rate to 44KHz
+        wave.header.numChannels = 2; // two channels (stereo)
+        wave.Make(data); // make the wave file
+      }
+      audio.src = wave.dataURI; // set audio source
+      audio.play(); // we should hear two tones one on each speaker    
+    }      
+    </script>
+    <style>
+    </style>
+  </head>
+  <body>
+    <svg id=boo width="100%" height="100%" style="position:absolute;top:0px;left:0px;margin:0px;padding:0px;border:0px"/>
+  </body>
+  <script>
+    document.getElementById('boo').addEventListener('click',function(e) { 
+      document.getElementById('boo').style.backgroundColor='red';
+      //sample();
+      //playback(rndSound());
+      //testctx();
+      stream();
+    });
+  </script>
+</html>

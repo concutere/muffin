@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <script>
+
+      var getCtx = (function() {
+        var ctx = new AudioContext();
+        return function() { return ctx; };
+      })();
+        
+    function scaleHz(val, max, octaves) {
+      //return Math.log(1+(h-(h-y))/h)*r;
+      return Math.pow(2,(max-val) / (max/octaves))
+    } 
+
+    var hz, minHz=110;
+    var offScale=1;
+    function stream() {
+      var ctx = getCtx();
+      var gain = ctx.createGain();
+      var filter = ctx.createBiquadFilter();
+      var compressor = ctx.createDynamicsCompressor();
+      var analyser = ctx.createAnalyser();
+      //var delay = ctx.createDelay();
+      var oscillator = ctx.createOscillator();
+      
+      /*
+        
+      */
+      analyser.smoothingTimeConstant=0.5;
+      gain.gain.value=1;
+      //oscillator.frequency.value = 220;
+      oscillator.type = 'triangle';
+      filter.frequency.value = 220;
+      filter.type='lowpass';
+      filter.gain.value=1;
+      filter.Q.value=25;
+
+      oscillator.connect(filter);
+      filter.connect(compressor);
+      
+      //oscillator.connect(compressor);
+
+      compressor.connect(analyser);
+      gain.connect(analyser);
+      analyser.connect(ctx.destination);
+      if (isNaN(hz))
+        hz=minHz;
+      
+      var recur = function recur() {
+        if (isNaN(hz)) {
+          try {
+          oscillator.stop();
+          analyser.disconnect();
+          compressor.disconnect();
+          gain.disconnect();
+          //ctx.destination.disconnect();
+          } catch(e) { }
+          return;
+        }
+        else {
+          oscillator.frequency.value = hz;
+          
+          var vibrato = 100 + 900 * (1-offScale);
+          var v = (new Date()).getTime() % vibrato;
+          var scale = (1-Math.sin(v * (Math.PI * 2)/vibrato));
+           
+          oscillator.detune.value = 100*scale*offScale;
+          requestAnimationFrame(recur);
+        }
+      };
+
+      oscillator.start();
+      requestAnimationFrame(recur);
+    }
+
+    
+function bisect(a,b) {
+  return [Math.abs(b[0] - a[0]),Math.abs(b[1] - a[1])];
+}
+
+    </script>
+    <style>
+    </style>
+  </head>
+  <body>
+    <svg id=boo width="100%" height="100%" style="position:absolute;top:0px;left:0px;margin:0px;padding:0px;border:0px"/>
+  </body>
+  <script>
+
+    var boo = document.getElementById('boo');
+    /*boo.addEventListener('mousedown',function(e) { 
+      //console.log(e.clientY);
+      document.getElementById('boo').style.backgroundColor='red';
+      //sample();
+      //playback(rndSound());
+
+        //stream();
+        //testctx();
+        if (isNaN(hz)) {
+          console.log('stream');
+          stream();
+        }
+        var h = boo.height.baseVal.value;
+        var w = boo.width.baseVal.value;
+        var x = e.clientX;
+        var y = e.clientY;
+        var ratio = scaleHz(y,h,2);//Math.log(1+(h-y)/h)*4;
+        //console.log(ratio);
+        hz=ratio*minHz;
+        //hz=(boo.height.baseVal.value - e.clientY) / boo.height.baseVal.value;
+
+        //hz=pos2Hz(e.clientX,e.clientY,boo.width.baseVal.value,boo.height.baseVal.value);
+    });*/
+    document.addEventListener('mouseup', function() {
+      hz=undefined;
+    });
+    document.addEventListener('mousemove',function(e) {
+      if (e.which == 0) {
+        // no clicky, no draggy
+        return;
+      }
+      //console.log('move');
+      if (isNaN(hz)) {
+        //console.log('stream');
+        stream();
+      }
+      var h = boo.height.baseVal.value;
+      var w = boo.width.baseVal.value;
+      var x = e.clientX;
+      var y = e.clientY;
+      var ratio = scaleHz(y,h,2);//Math.log(1+(h-y)/h)*4;
+      hz=ratio*minHz; 
+      offScale = x/w;
+    });
+  </script>
+</html>
