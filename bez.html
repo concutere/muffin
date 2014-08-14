@@ -119,7 +119,7 @@ function reWave(pts,range,r2) {
       p.setAttribute('strokeThickness',5);
       p.setAttribute('fill','transparent');
       p.setAttribute('d',getD(pts));
-      //currPts=pts;
+
       return p;
     }
     
@@ -166,7 +166,6 @@ function reWave(pts,range,r2) {
         addControl(svg,'control'+(i),pts[i].x, pts[i].y);      
       }
     }
-    
     </script>
     <style>
     </style>
@@ -179,22 +178,40 @@ function reWave(pts,range,r2) {
   <script>
 
     var boo = document.getElementById('boo');
-    var ctlid = -1;
-    document.addEventListener('mousedown',function(e) { 
+    var ctlid = undefined;
+    document.addEventListener('mousedown', down);
+    document.addEventListener('touchstart', function (e) {
+      down(e.touches[0]);
+    });
+    function down (e) { 
       if(e.srcElement.id.indexOf('control')==0) {
         ctlid = parseInt(e.srcElement.id.substr(7));
       }
-    });
-    document.addEventListener('mouseup', function() {
+    }
+    document.addEventListener('mouseup', up);
+    document.addEventListener('touchend', up);
+    
+    function up(e) {
       hz=undefined;
       ctlid = undefined;
-    });
+    }
+    
     document.addEventListener('mousemove',function(e) {
       if (e.which == 0) {
         // no clicky, no draggy
         return;
       }
+      move(e);
+    });
+    
+    document.addEventListener('touchmove',function(e) {
+      move(e.touches[0]);
+    });
+    function move(e) {
       //console.log('move');
+      if (ctlid == undefined)
+        return;
+        
       if (isNaN(hz)) {
         //console.log('stream');
         stream();
@@ -218,7 +235,7 @@ function reWave(pts,range,r2) {
       }
       //var ratio = scaleHz(y,h,2);//Math.log(1+(h-y)/h)*4;
       //hz=ratio*minHz; 
-    });
+    }
     document.addEventListener('DOMContentLoaded', init);
 
   </script>
