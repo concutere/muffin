@@ -2,6 +2,8 @@
 <html>
   <head>
 
+    <script src="dft.js"></script>
+    
     <script>
       
       var getCtx = (function() {
@@ -14,7 +16,7 @@
       return Math.pow(2,(max-val) / (max/octaves))
     } 
 
-    var hz, minHz=110, initHz=261.625565;
+    var hz, minHz=110, initHz=261.625565; //middle C
     var newWave=undefined;
     function stream() {
       var ctx = getCtx();
@@ -80,22 +82,61 @@ function bisect(a,b) {
   return [Math.abs(b[0] - a[0]),Math.abs(b[1] - a[1])];
 }
 
-function reWave(pts,range,r2) {
-  var ctx = getCtx();
-  var a = new Float32Array(pts.length);
-  var b = new Float32Array(pts.length);
-  for(var i = 0; i < a.length; i++) {
-    a[i] = pts[i].y/range;
-    b[i] = pts[i].x/r2;
+function expand(pts, size,xmax,ymax) {
+  //TODO!!!
+  //stick with quadratic? or use cubic once the simpler case is working?
+  function isPowOf2(x) {
+    return (x != 0) && ((x & (x - 1)) == 0);
   }
   
-  return ctx.createPeriodicWave(a,b);
+  while (!isPowOf2(pts.length)) {
+    //add single point to longest segment
+    //find longest segment (maintain list of diffs? recalcing each loop aint cheap ...)
+    var ds = diffs(pts,xmax,ymax);
+    var max = idxOfMax(ds);
+
+  }
+  return pts;
+}
+
+function idxOfMax(list) {
+  var id=0;
+  for (var i = 1; i < list.length; i++) {
+    if (list[i] > list[id]) {
+      id = i;
+    }
+  }
+  return id;
+}
+
+function diff(cur,pre,xmax,ymax) {
+  return Math.sqrt(Math.pow(cur.x/xmax - pre.x/xmax,2) + Math.pow(cur.y/ymax - pre.y/ymax,2)) 
+}
+function diffs(pts,xmax,ymax) {
+  var vals = new Float32Array(pts.length);
+
+  //////
+  for(var i = 0; i < pts.length; i++) {
+    vals[i] = i == 0 ? 0 : 
+              diff(pts[i], pts[i-1],xmax,ymax);
+  }
+  return vals;
+}
+
+function reWave(pts,h,w) {
+  var ctx = getCtx();
+  if(pts.length < dft.size)
+    expand(pts,dft.size);
+  var vals = diffs(pts,w,h)
+  
+  var trans = dft(vals);
+  return ctx.createPeriodicWave(trans.real,trans.imag);
 }
     </script>
     
     <script>
     function getD(pts) {
-      var op = 'T';
+      var op = 'S';
       return "M " + pts[0].x + ", " + pts[0].y + " " + op + ' ' + pts.join(", ");
     }
     var svgNS = "http://www.w3.org/2000/svg";
@@ -124,7 +165,7 @@ function reWave(pts,range,r2) {
     }
     
     function rePath(svg,pts,replace) {
-      var op = 'T';
+      var op = 'S';
       var currP = document.getElementById('path');
       if(currP) {
         var d = currP.getAttribute('d');
@@ -231,7 +272,7 @@ function reWave(pts,range,r2) {
         ctl.setAttribute('cy',y);
         console.log(pt.toString() + '\n' + ctl.getAttribute('cx'));
         rePath(boo,pts,true);
-        newWave = reWave(pts,h/2,w/2);
+        newWave = reWave(pts,h,w); //h/2,w/2);
       }
       //var ratio = scaleHz(y,h,2);//Math.log(1+(h-y)/h)*4;
       //hz=ratio*minHz; 
