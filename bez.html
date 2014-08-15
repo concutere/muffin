@@ -2,8 +2,13 @@
 <html>
   <head>
 
-    <script src="dft.js"></script>
+    <script>
     
+
+      var bezSize = 64;
+
+</script>
+    <script src="dft.js"></script>
     <script>
       
       var getCtx = (function() {
@@ -78,25 +83,24 @@
     }
 
     
-function bisect(a,b) {
-  return [Math.abs(b[0] - a[0]),Math.abs(b[1] - a[1])];
-}
 
-function expand(pts, size,xmax,ymax) {
-  //TODO!!!
-  //stick with quadratic? or use cubic once the simpler case is working?
-  function isPowOf2(x) {
-    return (x != 0) && ((x & (x - 1)) == 0);
+function cubic(pts, size,w,h) {
+  function bernstein(x0,x1,x2,x3,t) {
+    //TODO derive coefficients from an arbitrary length list of points
+    return Math.pow(1-t,3) * x0 +
+           Math.pow(1-t,2) * 3 * t * x1 +
+           Math.pow(t,2) * 3 * (1 - t) * x2 +
+           Math.pow(t,3) * x3;
   }
-  
-  while (!isPowOf2(pts.length)) {
-    //add single point to longest segment
-    //find longest segment (maintain list of diffs? recalcing each loop aint cheap ...)
-    var ds = diffs(pts,xmax,ymax);
-    var max = idxOfMax(ds);
-
+  if (pts.length != 4) return; //TODO ...
+  var ts = [];
+  for (var t = 0.0; t < 1; t+=1/size) {
+    var bx = bernstein(pts[0].x,pts[1].x,pts[2].x,pts[3]
+    .x, t);
+    var by = bernstein(pts[0].y,pts[1].y,pts[2].y,pts[3].y, t);
+    ts.push({x: bx, y: by});
   }
-  return pts;
+  return ts;
 }
 
 function idxOfMax(list) {
@@ -110,7 +114,10 @@ function idxOfMax(list) {
 }
 
 function diff(cur,pre,xmax,ymax) {
-  return Math.sqrt(Math.pow(cur.x/xmax - pre.x/xmax,2) + Math.pow(cur.y/ymax - pre.y/ymax,2)) 
+  if (isNaN(xmax)) xmax = 1;
+  if (isNaN(ymax)) ymax = 1;
+  //return Math.sqrt(Math.pow(cur.x - pre.x,2) + Math.pow(cur.y - pre.y,2)) 
+  //return Math.sqrt(Math.pow(cur.x/xmax - pre.x/xmax,2) + Math.pow(cur.y/ymax - pre.y/ymax,2)) 
 }
 function diffs(pts,xmax,ymax) {
   var vals = new Float32Array(pts.length);
@@ -125,19 +132,25 @@ function diffs(pts,xmax,ymax) {
 
 function reWave(pts,h,w) {
   var ctx = getCtx();
-  if(pts.length < dft.size)
-    expand(pts,dft.size);
-  var vals = diffs(pts,w,h)
-  
+  var cpts = cubic(pts,bezSize); //diffs(pts,w,h)
+  var svg = document.getElementById('boo');
+  var vals=[];
+  for (var i = 0; i < cpts.length; i++) {
+    addBC(svg,i,cpts[i].x,cpts[i].y);
+    // TODO salvage x term? below line uses ratio of x from middle as a weight for y
+    //vals[i]=cpts[i].y /2 + cpts[i].y/2*Math.abs(cpts[i].x-w/2)/(w/2);
+    vals[i]=cpts[i].y;
+  }
+
   var trans = dft(vals);
   return ctx.createPeriodicWave(trans.real,trans.imag);
 }
     </script>
     
     <script>
+      var op = 'C';
     function getD(pts) {
-      var op = 'S';
-      return "M " + pts[0].x + ", " + pts[0].y + " " + op + ' ' + pts.join(", ");
+      return "M " + pts[0].x + ", " + pts[0].y + " " + op + ' ' + pts.slice(1).join(", ");
     }
     var svgNS = "http://www.w3.org/2000/svg";
     function addControl(svg,name, x, y) {
@@ -149,6 +162,19 @@ function reWave(pts,h,w) {
       p.setAttribute('cx', x);
       p.setAttribute('cy', y);
       p.setAttribute('r', 25);
+      return p;
+    }
+      
+    function addBC(svg,name, x, y) {
+      var p = document.getElementById('bc'+name) || document.createElementNS(svgNS,"circle");
+      svg.appendChild(p);
+      p.id = 'bc'+name;
+      p.setAttribute('stroke','#0f0');
+      p.setAttribute('strokeThickness',1);
+      p.setAttribute('fill','transparent');
+      p.setAttribute('cx', x);
+      p.setAttribute('cy', y);
+      p.setAttribute('r', 5);
       return p;
     }
       
@@ -165,7 +191,6 @@ function reWave(pts,h,w) {
     }
     
     function rePath(svg,pts,replace) {
-      var op = 'S';
       var currP = document.getElementById('path');
       if(currP) {
         var d = currP.getAttribute('d');
@@ -278,6 +303,43 @@ function reWave(pts,h,w) {
       //hz=ratio*minHz; 
     }
     document.addEventListener('DOMContentLoaded', init);
+
+//    ////////////////////////////////////
+//    //n-degree bernstein func
+//        /**Computes factorial*/
+//function fact(k){
+//    if(k==0 || k==1){
+//	return 1;
+//    }
+//    else{
+//	return k * fact(k-1);
+//    }
+//}
+//
+///**Computes Bernstain
+//*@param {Integer} i - the i-th index
+//*@param {Integer} n - the total number of points
+//*@param {Number} t - the value of parameter t , between 0 and 1
+//**/
+//function B(i,n,t){
+//    //if(n < i) throw "Wrong";
+//    return fact(n) / (fact(i) * fact(n-i))* Math.pow(t, i) * Math.pow(1-t, n-i);
+//}                            
+//
+//
+///**Computes a point's coordinates for a value of t
+//*@param {Number} t - a value between o and 1
+//*@param {Array} points - an {Array} of [x,y] coodinates. The initial points
+//**/
+//function P(t, points){
+//    var r = {x:0,y:0};
+//    var n = points.length-1;
+//    for(var i=0; i <= n; i++){
+//	r.x += points[i].x * B(i, n, t);
+//	r.y += points[i].y * B(i, n, t);
+//    }                
+//    return r;
+//}
 
   </script>
 </html>

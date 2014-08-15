@@ -1,6 +1,6 @@
-var dft = (function() {
+        var dft = (function() {
 // w/ ref to https://github.com/corbanbrook/dsp.js/
-  var size = 4;//64; //4096;
+  var size = bezSize||64;
   var real = new Float32Array(size);
   var imag = new Float32Array(size);
 
@@ -15,7 +15,6 @@ var dft = (function() {
     sins[i] = Math.sin(i * pirat);
     coss[i] = Math.cos(i * pirat);
   }
-
   return function dft(shape) {
     this.size = size;
     if(shape.length != size) 
