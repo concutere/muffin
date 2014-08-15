@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <script>
+      
+      var getCtx = (function() {
+        var ctx = new AudioContext();
+        return function() { return ctx; };
+      })();
+        
+    function scaleHz(val, max, octaves) {
+      //return Math.log(1+(h-(h-y))/h)*r;
+      return Math.pow(2,(max-val) / (max/octaves))
+    } 
+
+    var hz, minHz=110, initHz=261.625565;
+    var newWave=undefined;
+    function stream() {
+      var ctx = getCtx();
+      var gain = ctx.createGain();
+      //var filter = ctx.createBiquadFilter();
+      //var compressor = ctx.createDynamicsCompressor();
+      //var analyser = ctx.createAnalyser();
+      var oscillator = ctx.createOscillator();
+      
+      /*
+        
+      */
+      //analyser.smoothingTimeConstant=0.5;
+      gain.gain.value=1;
+      //oscillator.frequency.value = 220;
+      oscillator.type = 'custom';
+      
+      /*filter.frequency.value = 220;
+      filter.type='lowpass';
+      filter.gain.value=1;
+      filter.Q.value=25;*/
+
+      //oscillator.connect(filter);
+      //filter.connect(compressor);
+      
+      //oscillator.connect(compressor);
+
+      //compressor.connect(analyser);
+      oscillator.connect(gain);
+      //gain.connect(analyser);
+      //analyser.connect(ctx.destination);
+      gain.connect(ctx.destination);
+      if (isNaN(hz))
+        oscillator.frequency.value=hz=initHz;
+      
+      var recur = function recur() {
+        if (isNaN(hz)) {
+          try {
+          oscillator.stop();
+          //analyser.disconnect();
+          //compressor.disconnect();
+          gain.disconnect();
+          //ctx.destination.disconnect();
+          } catch(e) { }
+          return;
+        }
+        else {
+          if(newWave) {
+            oscillator.setPeriodicWave(newWave);
+            newWave = undefined;
+          }
+          oscillator.frequency.value = hz;
+          requestAnimationFrame(recur);
+        }
+      };
+
+      oscillator.start();
+      requestAnimationFrame(recur);
+    }
+
+    
+function bisect(a,b) {
+  return [Math.abs(b[0] - a[0]),Math.abs(b[1] - a[1])];
+}
+
+function reWave(pts,range,r2) {
+  var ctx = getCtx();
+  var a = new Float32Array(pts.length);
+  var b = new Float32Array(pts.length);
+  for(var i = 0; i < a.length; i++) {
+    a[i] = pts[i].y/range;
+    b[i] = pts[i].x/r2;
+  }
+  
+  return ctx.createPeriodicWave(a,b);
+}
+    </script>
+    
+    <script>
+    function getD(pts) {
+      var op = 'T';
+      return "M " + pts[0].x + ", " + pts[0].y + " " + op + ' ' + pts.join(", ");
+    }
+    var svgNS = "http://www.w3.org/2000/svg";
+    function addControl(svg,name, x, y) {
+      var p = document.createElementNS(svgNS,"circle");
+      svg.appendChild(p);
+      p.id = name;
+      p.setAttribute('stroke','blue');
+      p.setAttribute('fill','red');
+      p.setAttribute('cx', x);
+      p.setAttribute('cy', y);
+      p.setAttribute('r', 25);
+      return p;
+    }
+      
+    function addPath(svg,pts) {
+      var p = document.createElementNS(svgNS,"path");
+      svg.appendChild(p);
+      p.id='path';
+      p.setAttribute('stroke','black');
+      p.setAttribute('strokeThickness',5);
+      p.setAttribute('fill','transparent');
+      p.setAttribute('d',getD(pts));
+
+      return p;
+    }
+    
+    function rePath(svg,pts,replace) {
+      var op = 'T';
+      var currP = document.getElementById('path');
+      if(currP) {
+        var d = currP.getAttribute('d');
+        if (replace) {
+          d = getD(pts);
+        }
+        else {
+          d += " " + op + " " + pts.join(", ");
+          
+        }
+        //alert('pre\n'+currClr.join(','));
+        //currClr = nudgeClr(currClr,getDiffs(currPts,pts));
+        //alert('post\n'+currClr.join(','));
+        //currP.setAttribute('stroke',rgbStr(currClr));
+        currP.setAttribute('d', d);
+      }
+    }
+
+    var pts=[];
+    function init(e) {
+      var svg = document.getElementById('boo');
+      var w = svg.width.baseVal.value;
+      var h = svg.height.baseVal.value;
+      if(w == 0 || h == 0) {
+        setTimeout(init,1);
+        return;
+      }
+      var yy = h/2;
+      
+      for (var i = 0.0; i <= 1; i+=1/3) {
+        var xx = Math.round(i * w)
+        var pt = { x: xx, y: yy, toString: function() { return this.x + ' ' + this.y; } };
+        pts.push(pt);
+      }
+      
+      addPath(svg,pts);
+      
+      for (var i = 0; i < pts.length; i++) {
+        addControl(svg,'control'+(i),pts[i].x, pts[i].y);      
+      }
+    }
+    </script>
+    <style>
+    </style>
+  </head>
+  <body>
+    <svg id=boo width="100%" height="100%" style="position:absolute;top:0px;left:0px;margin:0px;padding:0px;border:0px">
+
+    </svg>
+  </body>
+  <script>
+
+    var boo = document.getElementById('boo');
+    var ctlid = undefined;
+    document.addEventListener('mousedown', down);
+    document.addEventListener('touchstart', function (e) {
+      down(e.touches[0]);
+    });
+    function down (e) { 
+      if(e.srcElement.id.indexOf('control')==0) {
+        ctlid = parseInt(e.srcElement.id.substr(7));
+      }
+    }
+    document.addEventListener('mouseup', up);
+    document.addEventListener('touchend', up);
+    
+    function up(e) {
+      hz=undefined;
+      ctlid = undefined;
+    }
+    
+    document.addEventListener('mousemove',function(e) {
+      if (e.which == 0) {
+        // no clicky, no draggy
+        return;
+      }
+      move(e);
+    });
+    
+    document.addEventListener('touchmove',function(e) {
+      move(e.touches[0]);
+    });
+    function move(e) {
+      //console.log('move');
+      if (ctlid == undefined)
+        return;
+        
+      if (isNaN(hz)) {
+        //console.log('stream');
+        stream();
+      }
+      var h = boo.height.baseVal.value;
+      var w = boo.width.baseVal.value;
+      var x = e.clientX;
+      var y = e.clientY;
+      var id = e.srcElement.id;
+      if(ctlid >=0 && ctlid < pts.length) {
+        var i = ctlid;
+        var ctl = document.getElementById('control'+ctlid);
+        var pt= pts[ctlid];
+        pt.x = x;
+        pt.y = y;
+        ctl.setAttribute('cx',x);
+        ctl.setAttribute('cy',y);
+        console.log(pt.toString() + '\n' + ctl.getAttribute('cx'));
+        rePath(boo,pts,true);
+        newWave = reWave(pts,h/2,w/2);
+      }
+      //var ratio = scaleHz(y,h,2);//Math.log(1+(h-y)/h)*4;
+      //hz=ratio*minHz; 
+    }
+    document.addEventListener('DOMContentLoaded', init);
+
+  </script>
+</html>
