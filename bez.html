@@ -5,7 +5,7 @@
     <script>
     
 
-      var bezSize = 64;
+      var bezSize = 4096;
 
 </script>
     <script src="dft.js"></script>
@@ -134,21 +134,24 @@ function reWave(pts,h,w) {
   var ctx = getCtx();
   var cpts = cubic(pts,bezSize); //diffs(pts,w,h)
   var svg = document.getElementById('boo');
-  var vals=[];
+  var vals=vals||new Float32Array(cpts.length);;
   for (var i = 0; i < cpts.length; i++) {
-    addBC(svg,i,cpts[i].x,cpts[i].y);
+    if(i % (cpts.length/64) == 0) addBC(svg,i,cpts[i].x,cpts[i].y);
     // TODO salvage x term? below line uses ratio of x from middle as a weight for y
     //vals[i]=cpts[i].y /2 + cpts[i].y/2*Math.abs(cpts[i].x-w/2)/(w/2);
     vals[i]=cpts[i].y;
   }
 
-  var trans = dft(vals);
+  var fft = new FFT(bezSize);
+  
+  var trans = fft.forward(vals);//dft(vals);
+  console.log(trans.real.length);
   return ctx.createPeriodicWave(trans.real,trans.imag);
 }
     </script>
     
     <script>
-      var op = 'C';
+      var op = 'C'; //using S w/o slice (below) gives all pts on the actual curve
     function getD(pts) {
       return "M " + pts[0].x + ", " + pts[0].y + " " + op + ' ' + pts.slice(1).join(", ");
     }
