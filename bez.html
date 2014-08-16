@@ -14,17 +14,19 @@
     <script src="dft.js"></script>
     
     <script>
-      //basic audio setup
-          var getCtx = (function() {
+      /****************
+        basic audio setup
+      *****************/
+      var getCtx = (function() {
         var ctx = new AudioContext();
         return function() { return ctx; };
       })();
         
     function scaleHz(val, max, octaves) {
-      return Math.pow(2,(max-val) / (max/octaves))
+      return Math.pow(2,(max-val) / (max/octaves));
     } 
 
-    var hz, minHz=110, initHz=261.625565; //middle C
+    var hz, minHz=110, initHz=261.625565, cents=0; //middle C
     var newWave=undefined;
     function stream() {
       var ctx = getCtx();
@@ -54,6 +56,7 @@
             newWave = undefined;
           }
           oscillator.frequency.value = hz;
+          oscillator.detune.value = cents;
           requestAnimationFrame(recur);
         }
       };
@@ -240,13 +243,14 @@ function reWave(pts,h,w) {
   </head>
   <body>
     <svg id=boo width="100%" height="100%" style="position:absolute;top:0px;left:0px;margin:0px;padding:0px;border:0px">
-
+      <rect id=pitch x=0 y=0 width=50 height=5 rx=5 ry=5 fill="#abc"/>
     </svg>
   </body>
   <script>
     //event handlers
     var boo = document.getElementById('boo');
     var ctlid = undefined;
+    var lastPitch = undefined;
     document.addEventListener('mousedown', down);
     document.addEventListener('touchstart', function (e) {
       down(e.touches[0]);
@@ -255,13 +259,22 @@ function reWave(pts,h,w) {
       if(e.srcElement.id.indexOf('control')==0) {
         ctlid = parseInt(e.srcElement.id.substr(7));
       }
+      else if(e.srcElement.id=='pitch') {
+        lastPitch = 0;
+      }
     }
     document.addEventListener('mouseup', up);
     document.addEventListener('touchend', up);
     
     function up(e) {
-      hz=undefined;
-      ctlid = undefined;
+      //if(e.srcElement.id.indexOf('control')==0) {
+        hz=undefined;
+        ctlid = undefined;
+      //}
+      //else if(e.srcElement.id=='pitch') {
+        lastPitch=undefined;
+        //cents=0;
+      //}
     }
     
     document.addEventListener('mousemove',function(e) {
@@ -269,12 +282,60 @@ function reWave(pts,h,w) {
         // no clicky, no draggy
         return;
       }
-      move(e);
+      if(ctlid) {
+        move(e);
+      }
+      else if(!isNaN(lastPitch)) {
+        movePitch(e);
+      }
     });
     
     document.addEventListener('touchmove',function(e) {
       move(e.touches[0]);
     });
+    function movePitch(e) {
+      if (isNaN(hz)) {
+        stream();
+      }
+      lastPitch = e.clientX;
+      var centWt = 1;
+      if (e.ctrlKey && e.shiftKey) {
+        // major scale
+        cents=getCents(centWt, lastPitch, boo.width.baseVal.value);
+        if (cents < 100) 
+          cents = 0;
+        else if (cents < 300)
+          cents = 200;
+        else if (cents < 400)
+          cents = 400;
+        else if (cents < 600)
+          cents = 500;
+        else if (cents < 800)
+          cents = 700;
+        else if (cents < 1000)
+          cents = 900;
+        else if (cents < 1100)
+          cents = 1100;
+        else 
+          cents = 1200;
+      }
+      else {
+        if(e.altKey)
+          centWt = 400;
+        else if(e.ctrlKey) 
+          centWt = 100;
+        else if(e.shiftKey)
+          centWt = 300;
+        
+        cents = getCents(centWt,lastPitch,boo.width.baseVal.value);
+      }
+      function getCents(centWt,p,w) {
+        return centWt*Math.round((1200 * p/w)/centWt);
+      }
+      var el = document.getElementById('pitch');
+      el.setAttribute('x', e.clientX-25);
+    }
+    
     function move(e) {
       if (ctlid == undefined)
         return;
