@@ -293,6 +293,72 @@ function reWave(pts,h,w) {
     }
     document.addEventListener('DOMContentLoaded', init);
 
+    function rept(e) {
+    console.log('boo')
+      var cx = e.clientX, cy = e.clientY;
+      var h = boo.height.baseVal.value;
+      var w = boo.width.baseVal.value;
+      var el = e.srcElement;
+      if(el.id.indexOf('control')==0) {
+        // remove point
+        var ctlid = parseInt(el.id.slice(7));
+        console.log('removing '+ctlid);
+        if (isNaN(ctlid)) ctlid = pts.length-2;
+        var del = document.getElementById('control'+ctlid);
+        del.parentElement.removeChild(del);
+
+        //fix control circle names for id > ctlid
+        for (var i = ctlid+1;i<pts.length-1;i++) {
+          var rel = document.getElementById('control'+i);
+          if(rel) 
+            rel.id = 'control'+(i-1);
+        }
+
+        var pre=pts.slice(0,ctlid)
+        var post=pts.slice(ctlid+1);
+        pts=pre.concat(post);
+
+        rePath(boo,pts);
+        newWave = reWave(pts,h,w)
+      }
+      else {
+        var inid = pts.length;
+        var mind=0;
+        var ptd=undefined;
+        for (var i = 1; i < pts.length-1; i++) {
+          var dx = (cx-pts[i].x)/2;
+          var dy = (cy-pts[i].y)/2;
+          var d = Math.abs(dx) + Math.abs(dy);
+          if (mind==0 || d < mind) {
+            mind = d
+            inid=i;
+            ptd={x: cx, y: cy};
+          }
+        }
+        if (ptd==undefined) {
+          ptd={x: pts[pts.length-1].x, y: pts[pts.length-1].y};
+          inid=pts.length-1;
+        }
+        //TODO click comes before or after pt on curve? 
+        // use de casteljau pts for compare?
+        var after = dx > 0 && pts[inid+1].x-pts[inid].x > 0;
+        if (after)
+          inid++;
+        var pre = pts.slice(0,inid);
+        var post = pts.slice(inid);
+        pre.push(ptd);
+        pts=pre.concat(post);
+        var name ='control'+inid;
+       //fix control circle names for id > ctlid
+        for (var i = pts.length-2;inid<=i;i--) {
+          var rel = document.getElementById('control'+i);
+          if (rel)
+            rel.id = 'control'+(i+1);
+        }
+        addControl(boo, name,ptd.x, ptd.y);
+      }
+    }
+    document.addEventListener('dblclick', rept);
 //    ////////////////////////////////////
 //    //n-degree bernstein func
 //        /**Computes factorial*/
