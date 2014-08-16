@@ -7,8 +7,11 @@
 
       var bezSize = 4096;
       
+      var mute = true;;
+      
       var includeSvgPath = true;;
       var useDeCasteljauPath = true;
+      var pitchColor = false;
 
 </script>
     <script src="dft.js"></script>
@@ -39,7 +42,7 @@
  
       oscillator.connect(gain);
       gain.connect(ctx.destination);
-      if (isNaN(hz))
+      if (isNaN(hz) && !mute)
         oscillator.frequency.value=hz=initHz;
       
       var recur = function recur() {
@@ -61,7 +64,8 @@
         }
       };
 
-      oscillator.start();
+      if (!mute) 
+        oscillator.start();
       requestAnimationFrame(recur);
     }
 
@@ -334,6 +338,12 @@ function reWave(pts,h,w) {
       }
       var el = document.getElementById('pitch');
       el.setAttribute('x', e.clientX-25);
+      if (pitchColor) {
+        var color = colorange(cents, 1200);
+        var rgb = 'rgb(' + color.join(',') + ')';
+        el.setAttribute('fill', 'rgb(' + (colorange(cents, 1200)).join(',') + ')');
+
+      }
     }
     
     function move(e) {
@@ -366,7 +376,6 @@ function reWave(pts,h,w) {
     document.addEventListener('DOMContentLoaded', init);
 
     function rept(e) {
-    console.log('boo')
       var cx = e.clientX, cy = e.clientY;
       var h = boo.height.baseVal.value;
       var w = boo.width.baseVal.value;
@@ -374,7 +383,6 @@ function reWave(pts,h,w) {
       if(el.id.indexOf('control')==0) {
         // remove point
         var ctlid = parseInt(el.id.slice(7));
-        console.log('removing '+ctlid);
         if (isNaN(ctlid)) ctlid = pts.length-2;
         var del = document.getElementById('control'+ctlid);
         del.parentElement.removeChild(del);
@@ -467,6 +475,39 @@ function reWave(pts,h,w) {
 //    }                
 //    return r;
 //}
-
+  </script>
+  <script>
+  // color util from an old project, should be in some sort of util module ...
+    function colorange(x, w) {
+      var scale = 256/w;
+      var rgb = getSpectrumColor(x * scale, w * scale);
+      rgb = rgb.map(function(v,i,a) { return parseInt(v); });
+      return rgb;
+    }
+    var lastSpectra = -1;
+    function getSpectrumColor(x, w) {
+      var scale = 1/6;
+      var v = x/scale % w;
+      var newSpectra = Math.floor(x / w / scale);
+      lastSpectra = newSpectra;
+      if (newSpectra > 5 && x == w)
+        newSpectra = 0;
+      switch(newSpectra) {
+        case 0:
+          return [255-v, 0, 255];
+        case 1:
+          return [0, Math.floor(v), 255];
+        case 2:
+          return [0, 255, Math.floor(255-v)];
+        case 3:
+          return [v, 255, 0];
+        case 4:
+          return [255, 255-v, 0];
+        case 5: 
+          return [255, 0, v];
+        default: 
+          return [0,0,0];
+      }
+    }
   </script>
 </html>
