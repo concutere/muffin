@@ -7,11 +7,11 @@
 
       var bezSize = 4096;
       
-      var mute = true;;
+      var mute = false;
       
       var includeSvgPath = true;;
       var useDeCasteljauPath = true;
-      var pitchColor = false;
+      var pitchColor = true;
 
 </script>
     <script src="dft.js"></script>
@@ -56,7 +56,7 @@
         else {
           if(newWave) {
             oscillator.setPeriodicWave(newWave);
-            newWave = undefined;
+            //newWave = undefined;
           }
           oscillator.frequency.value = hz;
           oscillator.detune.value = cents;
@@ -247,7 +247,7 @@ function reWave(pts,h,w) {
   </head>
   <body>
     <svg id=boo width="100%" height="100%" style="position:absolute;top:0px;left:0px;margin:0px;padding:0px;border:0px">
-      <rect id=pitch x=0 y=0 width=50 height=5 rx=5 ry=5 fill="#abc"/>
+      <rect id=pitch x=0 y=0 width=50 height=5 rx=5 ry=5 fill="lightslategray"/>
     </svg>
   </body>
   <script>
@@ -297,12 +297,16 @@ function reWave(pts,h,w) {
     document.addEventListener('touchmove',function(e) {
       move(e.touches[0]);
     });
+    
     function movePitch(e) {
       if (isNaN(hz)) {
         stream();
       }
       lastPitch = e.clientX;
       var centWt = 1;
+      if (e.ctrlKey && e.shiftKey && e.altKey) {
+        newWave=undefined;
+      }
       if (e.ctrlKey && e.shiftKey) {
         // major scale
         cents=getCents(centWt, lastPitch, boo.width.baseVal.value);
@@ -332,6 +336,7 @@ function reWave(pts,h,w) {
           centWt = 300;
         
         cents = getCents(centWt,lastPitch,boo.width.baseVal.value);
+        //newWave = reWave(pts,boo.height.baseVal.value,boo.width.baseVal.value);
       }
       function getCents(centWt,p,w) {
         return centWt*Math.round((1200 * p/w)/centWt);
@@ -340,8 +345,8 @@ function reWave(pts,h,w) {
       el.setAttribute('x', e.clientX-25);
       if (pitchColor) {
         var color = colorange(cents, 1200);
-        var rgb = 'rgb(' + color.join(',') + ')';
-        el.setAttribute('fill', 'rgb(' + (colorange(cents, 1200)).join(',') + ')');
+        var rgb = 'rgba(' + color.join(',') + ',127)';
+        el.setAttribute('fill', rgb);
 
       }
     }
@@ -399,7 +404,7 @@ function reWave(pts,h,w) {
         pts=pre.concat(post);
 
         rePath(boo,pts);
-        newWave = reWave(pts,h,w)
+        //newWave = reWave(pts,h,w)
       }
       else {
         var inid = pts.length;
