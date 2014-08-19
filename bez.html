@@ -73,7 +73,7 @@
 
     <script>
       //bezier functions
-function expand(pts, size) {
+function expand(pts, size, skipPad) {
   function cubic(x0,x1,x2,x3,t) {
     //TODO derive coefficients from an arbitrary length list of points
     return Math.pow(1-t,3) * x0 +
@@ -92,20 +92,22 @@ function expand(pts, size) {
     
     //break down into multiple 3pt quad curves and call expand on each
     //subdivide t accordingly for the accumulated expand calls
-    var last = pts[0];
+    var last = skipPad ? undefined : pts[0];
     var acc=[];
     var tsize = Math.floor(size/(pts.length-2));
-    for (var p = 1; p < pts.length-2; p++) {
+    for (var p = skipPad ? 0 : 1; p < pts.length-(skipPad ? 1 : 2); p++) {
       var midp = {x: (pts[p].x+pts[p+1].x)/2, 
                   y: (pts[p].y+pts[p+1].y)/2};
-      var seg = [last,pts[p],midp];
-      acc=acc.concat(expand(seg,tsize));
+      if(last!=undefined) {
+        var seg = [last,pts[p],midp];
+        acc=acc.concat(expand(seg,tsize, skipPad));
+      }
       last = midp;
     }
     acc=acc.concat(expand([last,pts[pts.length-2],pts[pts.length-1]],tsize));
     if (acc.length>size)
       acc=acc.slice(0,4096);
-    else 
+    else if (!skipPad)
       while (acc.length<size) 
         acc.push(acc[acc.length-1]);
 
@@ -143,13 +145,13 @@ function reWave(pts,h,w) {
       path.setAttribute('d',d);
   }
   for (var i = 0; i < cpts.length; i++) {
-    if(i % (cpts.length/64) == 0) 
+    if(i % (cpts.length/64) == 0) {
       addBC(svg,i,cpts[i].x,cpts[i].y);
+    }
     // using x can be good for "interesting" control options, less so for making sense of the math
     vals[i]=cpts[i].y;
   }
-
-
+  
   var fft = new FFT(bezSize);
   var trans = fft.forward(vals);
   return ctx.createPeriodicWave(trans.real,trans.imag);
@@ -169,11 +171,11 @@ function reWave(pts,h,w) {
       var p = document.createElementNS(svgNS,"circle");
       svg.appendChild(p);
       p.id = name;
-      p.setAttribute('stroke','blue');
-      p.setAttribute('fill','red');
+      p.setAttribute('strokeWidth',0);
+      p.setAttribute('fill','orangered');
       p.setAttribute('cx', x);
       p.setAttribute('cy', y);
-      p.setAttribute('r', 25);
+      p.setAttribute('r', 15);
       return p;
     }
       
@@ -181,12 +183,13 @@ function reWave(pts,h,w) {
       var p = document.getElementById('bc'+name) || document.createElementNS(svgNS,"circle");
       svg.appendChild(p);
       p.id = 'bc'+name;
-      p.setAttribute('stroke','#0f0');
-      p.setAttribute('strokeThickness',1);
+      p.setAttribute('class','bc');
+      p.setAttribute('stroke','#c6f');
+      p.setAttribute('strokeWidth',1);
       p.setAttribute('fill','transparent');
       p.setAttribute('cx', x);
       p.setAttribute('cy', y);
-      p.setAttribute('r', 5);
+      p.setAttribute('r', 3);
       return p;
     }
       
@@ -194,8 +197,8 @@ function reWave(pts,h,w) {
       var p = document.createElementNS(svgNS,"path");
       svg.appendChild(p);
       p.id='path';
-      p.setAttribute('stroke','black');
-      p.setAttribute('strokeThickness',5);
+      p.setAttribute('stroke','slategray');
+      p.setAttribute('strokeWidth',5);
       p.setAttribute('fill','transparent');
       p.setAttribute('d',getD(pts));
 
@@ -250,6 +253,10 @@ function reWave(pts,h,w) {
       <rect id=pitch x=0 y=0 width=50 height=5 rx=5 ry=5 fill="lightslategray"/>
     </svg>
   </body>
+  <script>
+    //demo ...
+    var samplePaths = [[0, 495.5, 72, 941, 105, 107, 160, 318, 207, 51, 302, 778, 353, 29, 543, 923, 767, 324, 944, 495.5]];
+  </script>
   <script>
     //event handlers
     var boo = document.getElementById('boo');
@@ -392,6 +399,14 @@ function reWave(pts,h,w) {
         var del = document.getElementById('control'+ctlid);
         del.parentElement.removeChild(del);
 
+        //cleanup deCasteljau ref pts
+        if (useDeCasteljauPath) {
+          for (var i = 0; i < 64; i++) {
+            el=document.getElementById('bc'+(i*64));
+            if (el) 
+              (el.parent||boo).removeChild(el);
+          }
+        }
         //fix control circle names for id > ctlid
         for (var i = ctlid+1;i<pts.length-1;i++) {
           var rel = document.getElementById('control'+i);
@@ -403,32 +418,36 @@ function reWave(pts,h,w) {
         var post=pts.slice(ctlid+1);
         pts=pre.concat(post);
 
-        rePath(boo,pts);
-        //newWave = reWave(pts,h,w)
+        //rePath(boo,pts);
       }
       else {
         var inid = pts.length;
         var mind=0;
         var ptd=undefined;
-        for (var i = 1; i < pts.length-1; i++) {
-          var dx = (cx-pts[i].x)/2;
-          var dy = (cy-pts[i].y)/2;
-          var d = Math.abs(dx) + Math.abs(dy);
+        var bcpts = expand(pts,pts.length,true); // gives midpoints
+        
+        for (var i = 0; i < bcpts.length; i++) {
+          var dx = Math.pow(cx-bcpts[i].x,2);
+          var dy = Math.pow(cy-bcpts[i].y,2);
+          var d = Math.sqrt((dx + dy)/2);
+          console.log(i + ', ' + bcpts[i].x + ', ' + bcpts[i].y);
           if (mind==0 || d < mind) {
-            mind = d
-            inid=i;
-            ptd={x: cx, y: cy};
+            mind = d;
+            inid=i+1;
+            inid=i+1;
+            ptd={x: cx, y: cy, toString: function() { return this.x + ' ' + this.y;}};
           }
         }
+        console.log(i + ' = ' + cx + ', ' + cy);
         if (ptd==undefined) {
-          ptd={x: pts[pts.length-1].x, y: pts[pts.length-1].y};
+          ptd={x: pts[pts.length-1].x, y: pts[pts.length-1].y, toString: function() { return this.x + ' ' + this.y;}};
           inid=pts.length-1;
         }
         //TODO click comes before or after pt on curve? 
         // use de casteljau pts for compare?
-        var after = dx > 0 && pts[inid+1].x-pts[inid].x > 0;
+        /*var after = dx > 0 && pts[inid+1].x-pts[inid].x > 0;
         if (after)
-          inid++;
+          inid++;*/
         var pre = pts.slice(0,inid);
         var post = pts.slice(inid);
         pre.push(ptd);
@@ -441,6 +460,7 @@ function reWave(pts,h,w) {
             rel.id = 'control'+(i+1);
         }
         addControl(boo, name,ptd.x, ptd.y);
+        //rePath(boo,pts);
       }
     }
     document.addEventListener('dblclick', rept);
