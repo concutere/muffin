@@ -1,10 +1,72 @@
 <!DOCTYPE html>
 <html>
   <head>
-
+    <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+    <style>
+    #text {
+      position:absolute;
+      font-size:36pt;
+      font-family:Roboto,Helvetica,Arial,sans-serif;
+    }
+    
+      .rollUp {
+        -webkit-animation-duration:2s;
+        -webkit-animation-name:up;
+        -webkit-animation-iteration:1;
+      }
+      .rollDown {
+        -webkit-animation-duration:2s;
+        -webkit-animation-name:dn;
+        -webkit-animation-iteration:1;
+        top:100%;
+      }
+      .rollLeft {
+        -webkit-animation-duration:2s;
+        -webkit-animation-name:lt;
+        -webkit-animation-iteration:1;
+      }
+      .rollRight {
+        -webkit-animation-duration:2s;
+        -webkit-animation-name:rt;
+        -webkit-animation-iteration:1;
+        margin-left:100%;
+      }
+      @-webkit-keyframes up {
+        from {
+          margin-top:100%;
+        }
+        to {
+          margin-top:0%;
+        }
+      }
+      @-webkit-keyframes dn {
+        from {
+          margin-top:-100%;
+        }
+        to {
+          margin-top:0%;
+        }
+      }
+       @-webkit-keyframes lt {
+        from {
+          margin-left:100%;
+        }
+        to {
+          margin-left:0%;
+        }
+      }
+       @-webkit-keyframes rt {
+        from {
+          left:-100%;
+        }
+        to {
+          left:0%;
+        }
+      }
+    </style>
     <script>
     
-
+      // DEBUG CONSTS ...
       var bezSize = 4096;
       
       var mute = false;
@@ -16,523 +78,24 @@
 </script>
     <script src="dft.js"></script>
     
-    <script>
-      /****************
-        basic audio setup
-      *****************/
-      var getCtx = (function() {
-        var ctx = new AudioContext();
-        return function() { return ctx; };
-      })();
-        
-    function scaleHz(val, max, octaves) {
-      return Math.pow(2,(max-val) / (max/octaves));
-    } 
+    <script src="bez.js"></script>
 
-    var hz, minHz=110, initHz=261.625565, cents=0; //middle C
-    var newWave=undefined;
-    function stream() {
-      var ctx = getCtx();
-      var gain = ctx.createGain();
-
-      var oscillator = ctx.createOscillator();
-      gain.gain.value=1;
-      oscillator.type = 'custom';
-      
- 
-      oscillator.connect(gain);
-      gain.connect(ctx.destination);
-      if (isNaN(hz) && !mute)
-        oscillator.frequency.value=hz=initHz;
-      
-      var recur = function recur() {
-        if (isNaN(hz)) {
-          try {
-            oscillator.stop();
-            gain.disconnect();
-          } catch(e) { }
-          return;
-        }
-        else {
-          if(newWave) {
-            oscillator.setPeriodicWave(newWave);
-            //newWave = undefined;
-          }
-          oscillator.frequency.value = hz;
-          oscillator.detune.value = cents;
-          requestAnimationFrame(recur);
-        }
-      };
-
-      if (!mute) 
-        oscillator.start();
-      requestAnimationFrame(recur);
-    }
-
-</script>
-
-    <script>
-      //bezier functions
-function expand(pts, size, skipPad) {
-  function cubic(x0,x1,x2,x3,t) {
-    //TODO derive coefficients from an arbitrary length list of points
-    return Math.pow(1-t,3) * x0 +
-           Math.pow(1-t,2) * 3 * t * x1 +
-           Math.pow(t,2) * 3 * (1 - t) * x2 +
-           Math.pow(t,3) * x3;
-  }
-  function quad(x0,x1,x2,t) {
-    return Math.pow(1-t,2) * x0 +
-           2*t*(1-t) * x1 +
-           t*t * x2;
-  }
-  
-  if (pts.length > 4) {
-    //see commented out P at bottom to handle any # of pts for a single higher-order beziercurve/bernstein poly
+    <script src="play.js"></script>
     
-    //break down into multiple 3pt quad curves and call expand on each
-    //subdivide t accordingly for the accumulated expand calls
-    var last = skipPad ? undefined : pts[0];
-    var acc=[];
-    var tsize = Math.floor(size/(pts.length-2));
-    for (var p = skipPad ? 0 : 1; p < pts.length-(skipPad ? 1 : 2); p++) {
-      var midp = {x: (pts[p].x+pts[p+1].x)/2, 
-                  y: (pts[p].y+pts[p+1].y)/2};
-      if(last!=undefined) {
-        var seg = [last,pts[p],midp];
-        acc=acc.concat(expand(seg,tsize, skipPad));
-      }
-      last = midp;
-    }
-    acc=acc.concat(expand([last,pts[pts.length-2],pts[pts.length-1]],tsize));
-    if (acc.length>size)
-      acc=acc.slice(0,4096);
-    else if (!skipPad)
-      while (acc.length<size) 
-        acc.push(acc[acc.length-1]);
-
-    return acc;
-  }
-  var ts = [];
-  for (var t = 0.0; t < 1; t+=1/size) {
-    if (pts.length==4) {
-      var bx = cubic(pts[0].x,pts[1].x,pts[2].x,pts[3]
-      .x, t);
-      var by = cubic(pts[0].y,pts[1].y,pts[2].y,pts[3].y, t);
-      ts.push({x: bx, y: by});
-    } else if(pts.length == 3) {
-      var bx = quad(pts[0].x,pts[1].x,pts[2].x, t);
-      var by = quad(pts[0].y,pts[1].y,pts[2].y, t);
-      ts.push({x: bx, y: by});
-    }
-  }
-  return ts;
-}
-
-function reWave(pts,h,w) {
-  var ctx = getCtx();
-  var cpts = expand(pts,bezSize);
-  var svg = document.getElementById('boo');
-  var vals=vals||new Float32Array(cpts.length);
-  if (includeSvgPath && useDeCasteljauPath) {
-    //todo move to beginning?
-    var d = "M " + cpts[0].x + ' ' + cpts[0].y ;
-    d = cpts.reduce(function(p,c,i,a) {
-      return p + " L " + c.x + ' ' + c.y;
-    },d);
-    var path = document.getElementById('path');
-    if (path)
-      path.setAttribute('d',d);
-  }
-  for (var i = 0; i < cpts.length; i++) {
-    if(i % (cpts.length/64) == 0) {
-      addBC(svg,i,cpts[i].x,cpts[i].y);
-    }
-    // using x can be good for "interesting" control options, less so for making sense of the math
-    vals[i]=cpts[i].y;
-  }
-  
-  var fft = new FFT(bezSize);
-  var trans = fft.forward(vals);
-  return ctx.createPeriodicWave(trans.real,trans.imag);
-}
-    </script>
-    
+    <script src="draw.js"></script>
+   
     <script>
-    //SVG stuff
-      var op = 'S'; //using S w/o slice (below) gives all pts on the actual curve
-      //C w/ slice(1) on pts.join below
-    function getD(pts) {
-
-        return "M " + pts[0].x + ", " + pts[0].y + ' ' + op + ' ' + pts.join(", ");
-    }
-    var svgNS = "http://www.w3.org/2000/svg";
-    function addControl(svg,name, x, y) {
-      var p = document.createElementNS(svgNS,"circle");
-      svg.appendChild(p);
-      p.id = name;
-      p.setAttribute('strokeWidth',0);
-      p.setAttribute('fill','orangered');
-      p.setAttribute('cx', x);
-      p.setAttribute('cy', y);
-      p.setAttribute('r', 15);
-      return p;
-    }
-      
-    function addBC(svg,name, x, y) {
-      var p = document.getElementById('bc'+name) || document.createElementNS(svgNS,"circle");
-      svg.appendChild(p);
-      p.id = 'bc'+name;
-      p.setAttribute('class','bc');
-      p.setAttribute('stroke','#c6f');
-      p.setAttribute('strokeWidth',1);
-      p.setAttribute('fill','transparent');
-      p.setAttribute('cx', x);
-      p.setAttribute('cy', y);
-      p.setAttribute('r', 3);
-      return p;
-    }
-      
-    function addPath(svg,pts) {
-      var p = document.createElementNS(svgNS,"path");
-      svg.appendChild(p);
-      p.id='path';
-      p.setAttribute('stroke','slategray');
-      p.setAttribute('strokeWidth',5);
-      p.setAttribute('fill','transparent');
-      p.setAttribute('d',getD(pts));
-
-      return p;
-    }
-    
-    function rePath(svg,pts) {
-    if (!includeSvgPath) return;
-      var currP = document.getElementById('path');
-      if(currP) {
-        var d = getD(pts);
-        currP.setAttribute('d', d);
-      }
-    }
-
-    var pts=[];
-    function init(e) {
-      var controlpts=8;
-      var svg = document.getElementById('boo');
-      var w = svg.width.baseVal.value;
-      var h = svg.height.baseVal.value;
-      if(w == 0 || h == 0) {
-        setTimeout(init,1);
-        return;
-      }
-      var yy = h/2;
-      pts=[];
-      //pts=[{x:0,y:yy}];
-      for (var i = 0; i <= 1; i+=1/(controlpts-1)) {
-        var xx = Math.round(i * w)
-        var pt = { x: xx, y: yy };
-        pts.push(pt);
-      }
-      //pts.push({x:w,y:yy})
-      pts.forEach(function(v,i,a) {
-        v['toString'] = function() { return this.x + ' ' + this.y; };
-      });
-      
-      if (includeSvgPath) 
-        addPath(svg,pts);
-      
-      for (var i = 1; i < pts.length-1; i++) {
-        addControl(svg,'control'+(i),pts[i].x, pts[i].y);      
-      }
-    }
-    </script>
-    <style>
-    </style>
+      //todo ...
+      var samplePaths = [
+        [0, 495.5, 72, 941, 105, 107, 160, 318, 207, 51, 302, 778, 353, 29, 543, 923, 767, 324, 944, 495.5],
+        [0, 495.5, 16, 945, 12, 982, 358, 969, 805, 483, 951, 77, 618, 13, 488, 202, 458, 244, 434, 204, 283 -2, -3, 73, 89, 432, 467, 978, 930, 959, 927, 969, 930, -1, 904, 10, 2, -5, 2, 48, 15, 914, 25, 986, 946, 997, 934, 978, 944, 495.5]
+      ];
+    </script>  
   </head>
-  <body>
+  <body style="overflow:hidden">
     <svg id=boo width="100%" height="100%" style="position:absolute;top:0px;left:0px;margin:0px;padding:0px;border:0px">
       <rect id=pitch x=0 y=0 width=50 height=5 rx=5 ry=5 fill="lightslategray"/>
     </svg>
   </body>
-  <script>
-    //demo ...
-    var samplePaths = [[0, 495.5, 72, 941, 105, 107, 160, 318, 207, 51, 302, 778, 353, 29, 543, 923, 767, 324, 944, 495.5]];
-  </script>
-  <script>
-    //event handlers
-    var boo = document.getElementById('boo');
-    var ctlid = undefined;
-    var lastPitch = undefined;
-    document.addEventListener('mousedown', down);
-    document.addEventListener('touchstart', function (e) {
-      down(e.touches[0]);
-    });
-    function down (e) { 
-      if(e.srcElement.id.indexOf('control')==0) {
-        ctlid = parseInt(e.srcElement.id.substr(7));
-      }
-      else if(e.srcElement.id=='pitch') {
-        lastPitch = 0;
-      }
-    }
-    document.addEventListener('mouseup', up);
-    document.addEventListener('touchend', up);
-    
-    function up(e) {
-      //if(e.srcElement.id.indexOf('control')==0) {
-        hz=undefined;
-        ctlid = undefined;
-      //}
-      //else if(e.srcElement.id=='pitch') {
-        lastPitch=undefined;
-        //cents=0;
-      //}
-    }
-    
-    document.addEventListener('mousemove',function(e) {
-      if (e.which == 0) {
-        // no clicky, no draggy
-        return;
-      }
-      if(ctlid) {
-        move(e);
-      }
-      else if(!isNaN(lastPitch)) {
-        movePitch(e);
-      }
-    });
-    
-    document.addEventListener('touchmove',function(e) {
-      move(e.touches[0]);
-    });
-    
-    function movePitch(e) {
-      if (isNaN(hz)) {
-        stream();
-      }
-      lastPitch = e.clientX;
-      var centWt = 1;
-      if (e.ctrlKey && e.shiftKey && e.altKey) {
-        newWave=undefined;
-      }
-      if (e.ctrlKey && e.shiftKey) {
-        // major scale
-        cents=getCents(centWt, lastPitch, boo.width.baseVal.value);
-        if (cents < 100) 
-          cents = 0;
-        else if (cents < 300)
-          cents = 200;
-        else if (cents < 400)
-          cents = 400;
-        else if (cents < 600)
-          cents = 500;
-        else if (cents < 800)
-          cents = 700;
-        else if (cents < 1000)
-          cents = 900;
-        else if (cents < 1100)
-          cents = 1100;
-        else 
-          cents = 1200;
-      }
-      else {
-        if(e.altKey)
-          centWt = 400;
-        else if(e.ctrlKey) 
-          centWt = 100;
-        else if(e.shiftKey)
-          centWt = 300;
-        
-        cents = getCents(centWt,lastPitch,boo.width.baseVal.value);
-        //newWave = reWave(pts,boo.height.baseVal.value,boo.width.baseVal.value);
-      }
-      function getCents(centWt,p,w) {
-        return centWt*Math.round((1200 * p/w)/centWt);
-      }
-      var el = document.getElementById('pitch');
-      el.setAttribute('x', e.clientX-25);
-      if (pitchColor) {
-        var color = colorange(cents, 1200);
-        var rgb = 'rgba(' + color.join(',') + ',127)';
-        el.setAttribute('fill', rgb);
-
-      }
-    }
-    
-    function move(e) {
-      if (ctlid == undefined)
-        return;
-        
-      if (isNaN(hz)) {
-        stream();
-      }
-      var h = boo.height.baseVal.value;
-      var w = boo.width.baseVal.value;
-      var x = e.clientX;
-      var y = e.clientY;
-      var id = e.srcElement.id;
-      if(ctlid >0 && ctlid < pts.length-1) {
-        var i = ctlid;
-        var ctl = document.getElementById('control'+ctlid);
-        var pt= pts[ctlid];
-        pt.x = x;
-        pt.y = y;
-        ctl.setAttribute('cx',x);
-        ctl.setAttribute('cy',y);
-
-        rePath(boo,pts);
-        newWave = reWave(pts,h,w); //h/2,w/2);
-      }
-      //var ratio = scaleHz(y,h,2);//Math.log(1+(h-y)/h)*4;
-      //hz=ratio*minHz; 
-    }
-    document.addEventListener('DOMContentLoaded', init);
-
-    function rept(e) {
-      var cx = e.clientX, cy = e.clientY;
-      var h = boo.height.baseVal.value;
-      var w = boo.width.baseVal.value;
-      var el = e.srcElement;
-      if(el.id.indexOf('control')==0) {
-        // remove point
-        var ctlid = parseInt(el.id.slice(7));
-        if (isNaN(ctlid)) ctlid = pts.length-2;
-        var del = document.getElementById('control'+ctlid);
-        del.parentElement.removeChild(del);
-
-        //cleanup deCasteljau ref pts
-        if (useDeCasteljauPath) {
-          for (var i = 0; i < 64; i++) {
-            el=document.getElementById('bc'+(i*64));
-            if (el) 
-              (el.parent||boo).removeChild(el);
-          }
-        }
-        //fix control circle names for id > ctlid
-        for (var i = ctlid+1;i<pts.length-1;i++) {
-          var rel = document.getElementById('control'+i);
-          if(rel) 
-            rel.id = 'control'+(i-1);
-        }
-
-        var pre=pts.slice(0,ctlid)
-        var post=pts.slice(ctlid+1);
-        pts=pre.concat(post);
-
-        //rePath(boo,pts);
-      }
-      else {
-        var inid = pts.length;
-        var mind=0;
-        var ptd=undefined;
-        var bcpts = expand(pts,pts.length,true); // gives midpoints
-        
-        for (var i = 0; i < bcpts.length; i++) {
-          var dx = Math.pow(cx-bcpts[i].x,2);
-          var dy = Math.pow(cy-bcpts[i].y,2);
-          var d = Math.sqrt((dx + dy)/2);
-          console.log(i + ', ' + bcpts[i].x + ', ' + bcpts[i].y);
-          if (mind==0 || d < mind) {
-            mind = d;
-            inid=i+1;
-            inid=i+1;
-            ptd={x: cx, y: cy, toString: function() { return this.x + ' ' + this.y;}};
-          }
-        }
-        console.log(i + ' = ' + cx + ', ' + cy);
-        if (ptd==undefined) {
-          ptd={x: pts[pts.length-1].x, y: pts[pts.length-1].y, toString: function() { return this.x + ' ' + this.y;}};
-          inid=pts.length-1;
-        }
-        //TODO click comes before or after pt on curve? 
-        // use de casteljau pts for compare?
-        /*var after = dx > 0 && pts[inid+1].x-pts[inid].x > 0;
-        if (after)
-          inid++;*/
-        var pre = pts.slice(0,inid);
-        var post = pts.slice(inid);
-        pre.push(ptd);
-        pts=pre.concat(post);
-        var name ='control'+inid;
-       //fix control circle names for id > ctlid
-        for (var i = pts.length-2;inid<=i;i--) {
-          var rel = document.getElementById('control'+i);
-          if (rel)
-            rel.id = 'control'+(i+1);
-        }
-        addControl(boo, name,ptd.x, ptd.y);
-        //rePath(boo,pts);
-      }
-    }
-    document.addEventListener('dblclick', rept);
-//    ////////////////////////////////////
-//    //n-degree bernstein func
-//        /**Computes factorial*/
-//function fact(k){
-//    if(k==0 || k==1){
-//	return 1;
-//    }
-//    else{
-//	return k * fact(k-1);
-//    }
-//}
-//
-///**Computes Bernstain
-//*@param {Integer} i - the i-th index
-//*@param {Integer} n - the total number of points
-//*@param {Number} t - the value of parameter t , between 0 and 1
-//**/
-//function B(i,n,t){
-//    //if(n < i) throw "Wrong";
-//    return fact(n) / (fact(i) * fact(n-i))* Math.pow(t, i) * Math.pow(1-t, n-i);
-//}                            
-//
-//
-///**Computes a point's coordinates for a value of t
-//*@param {Number} t - a value between o and 1
-//*@param {Array} points - an {Array} of [x,y] coodinates. The initial points
-//**/
-//function P(t, points){
-//    var r = {x:0,y:0};
-//    var n = points.length-1;
-//    for(var i=0; i <= n; i++){
-//	r.x += points[i].x * B(i, n, t);
-//	r.y += points[i].y * B(i, n, t);
-//    }                
-//    return r;
-//}
-  </script>
-  <script>
-  // color util from an old project, should be in some sort of util module ...
-    function colorange(x, w) {
-      var scale = 256/w;
-      var rgb = getSpectrumColor(x * scale, w * scale);
-      rgb = rgb.map(function(v,i,a) { return parseInt(v); });
-      return rgb;
-    }
-    var lastSpectra = -1;
-    function getSpectrumColor(x, w) {
-      var scale = 1/6;
-      var v = x/scale % w;
-      var newSpectra = Math.floor(x / w / scale);
-      lastSpectra = newSpectra;
-      if (newSpectra > 5 && x == w)
-        newSpectra = 0;
-      switch(newSpectra) {
-        case 0:
-          return [255-v, 0, 255];
-        case 1:
-          return [0, Math.floor(v), 255];
-        case 2:
-          return [0, 255, Math.floor(255-v)];
-        case 3:
-          return [v, 255, 0];
-        case 4:
-          return [255, 255-v, 0];
-        case 5: 
-          return [255, 0, v];
-        default: 
-          return [0,0,0];
-      }
-    }
-  </script>
-</html>
+  <script src="events.js"></script>
+ </html>
