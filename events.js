@@ -218,6 +218,8 @@ function type(e) {
     else { //load sound
       var newpts=[];
       var path = samplePaths[k];
+      if (!path || path.constructor != Array)
+        return;
       for (var i = 1; i < path.length; i+=2) {
         newpts.push({x: path[i-1], y: path[i], toString: function() { return this.x + " " + this.y; }});
       }
@@ -225,7 +227,9 @@ function type(e) {
       clearBCs(boo);
       pts = newpts;
       drawControls(boo);
-      reWave(pts,boo.height.baseVal.value, boo.width.baseVal.value);
+      newWave=reWave(pts,boo.height.baseVal.value, boo.width.baseVal.value);
+      if(k==0)
+        newWave = undefined; 
     }
   }
 }

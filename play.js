@@ -69,7 +69,7 @@ function reWave(pts,h,w) {
       path.setAttribute('d',d);
   }
   for (var i = 0; i < cpts.length; i++) {
-    if(i % (cpts.length/64) == 0) {
+    if(drawBCs && i % (cpts.length/64) == 0) {
       addBC(svg,i,cpts[i].x,cpts[i].y);
     }
     // using x can be good for "interesting" control options, less so for making sense of the math

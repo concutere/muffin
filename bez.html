@@ -6,8 +6,9 @@
     div {
       position:absolute;
       width:100%;
-      font-size:36pt;
+      font-size:5em;
       font-family:Roboto,Helvetica,Arial,sans-serif;
+      text-align:center;
     }
     
     .hide {
@@ -46,10 +47,10 @@
       }
       @-webkit-keyframes dn {
         from {
-          margin-top:-100%;
+          top:0%;
         }
         to {
-          margin-top:0%;
+          top:100%;
         }
       }
        @-webkit-keyframes lt {
@@ -79,6 +80,7 @@
       var includeSvgPath = true;;
       var useDeCasteljauPath = true;
       var pitchColor = true;
+      var drawBCs = true;
 
 </script>
     <script src="dft.js"></script>
@@ -87,13 +89,15 @@
 
     <script src="play.js"></script>
     
+    <script src="colors.js"></script>
     <script src="draw.js"></script>
    
     <script>
       //todo ...
       var samplePaths = [
-        [0, 495.5, 72, 941, 105, 107, 160, 318, 207, 51, 302, 778, 353, 29, 543, 923, 767, 324, 944, 495.5],
-        [0, 495.5, 16, 945, 12, 982, 358, 969, 805, 483, 951, 77, 618, 13, 488, 202, 458, 244, 434, 204, 283 -2, -3, 73, 89, 432, 467, 978, 930, 959, 927, 969, 930, -1, 904, 10, 2, -5, 2, 48, 15, 914, 25, 986, 946, 997, 934, 978, 944, 495.5]
+        [0, 495.5, 57, 286, 257, 179, 376, 393, 451, 592, 647, 922, 882, 655, 944, 495.5], //sine wave imposter
+        [0, 495.5, 72, 941, 105, 107, 160, 318, 207, 51, 302, 778, 353, 29, 543, 923, 767, 324, 944, 495.5], //simple overtones, almost woodwidish
+        [0, 495.5, 16, 945, 12, 982, 358, 969, 805, 483, 951, 77, 618, 13, 488, 202, 458, 244, 434, 204, 283 -2, -3, 73, 89, 432, 467, 978, 930, 959, 927, 969, 930, -1, 904, 10, 2, -5, 2, 48, 15, 914, 25, 986, 946, 997, 934, 978, 944, 495.5] //TODO make a better boxy, distorted tone
       ];
     </script>  
   </head>
@@ -101,9 +105,9 @@
     <svg id=boo width="100%" height="100%" style="position:absolute;top:0px;left:0px;margin:0px;padding:0px;border:0px">
       <rect id=pitch x=0 y=0 width=50 height=5 rx=5 ry=5 fill="lightslategray"/>
     </svg>
-    
+
     <div id="slide0" class=hide>WHAT IS THE SHAPE OF SOUND?</div>
-    <div id="slide1" class=hide>WEB AUDIO OVERVIEW</div>
+    <div id="slide1" class=hide>WEB AUDIO</div>
     <div id="slide2" class=hide>BEZIER CURVES</div>
     <div id="slide3" class=hide>SOUND OF BEZIERS</div>
   </body>
