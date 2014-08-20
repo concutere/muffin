@@ -15,23 +15,20 @@ function init(e) {
   }
   var yy = h/2;
   pts=[];
-  //pts=[{x:0,y:yy}];
+  path=[];
   for (var i = 0; i <= 1; i+=1/(controlpts-1)) {
     var xx = Math.round(i * w)
-    var pt = { x: xx, y: yy };
+    var pt = { x: xx, y: yy, toString: function() { return this.x + ' ' + this.y; } };
     pts.push(pt);
+    path.push(xx);
+    path.push(yy);
   }
-  //pts.push({x:w,y:yy})
-  pts.forEach(function(v,i,a) {
-    v['toString'] = function() { return this.x + ' ' + this.y; };
-  });
+  samplePaths = ([path]).concat(samplePaths);
   
   if (includeSvgPath) 
     addPath(svg,pts);
-  
-  for (var i = 1; i < pts.length-1; i++) {
-    addControl(svg,'control'+(i),pts[i].x, pts[i].y);      
-  }
+
+  drawControls(svg,pts);
 }
 
 function down (e) { 
@@ -55,40 +52,26 @@ function movePitch(e) {
   }
   lastPitch = e.clientX;
   var centWt = 1;
-  if (e.ctrlKey && e.shiftKey && e.altKey) {
-    newWave=undefined;
-  }
-  if (e.ctrlKey && e.shiftKey) {
-    // major scale
-    cents=getCents(centWt, lastPitch, boo.width.baseVal.value);
-    if (cents < 100) 
-      cents = 0;
-    else if (cents < 300)
-      cents = 200;
-    else if (cents < 400)
-      cents = 400;
-    else if (cents < 600)
-      cents = 500;
-    else if (cents < 800)
-      cents = 700;
-    else if (cents < 1000)
-      cents = 900;
-    else if (cents < 1100)
-      cents = 1100;
-    else 
-      cents = 1200;
-  }
-  else {
-    if(e.altKey)
-      centWt = 400;
-    else if(e.ctrlKey) 
-      centWt = 100;
-    else if(e.shiftKey)
-      centWt = 300;
+
+  // major scale
+  cents=getCents(centWt, lastPitch, boo.width.baseVal.value);
+  if (cents < 100) 
+    cents = 0;
+  else if (cents < 300)
+    cents = 200;
+  else if (cents < 400)
+    cents = 400;
+  else if (cents < 600)
+    cents = 500;
+  else if (cents < 800)
+    cents = 700;
+  else if (cents < 1000)
+    cents = 900;
+  else if (cents < 1100)
+    cents = 1100;
+  else 
+    cents = 1200;
     
-    cents = getCents(centWt,lastPitch,boo.width.baseVal.value);
-    //newWave = reWave(pts,boo.height.baseVal.value,boo.width.baseVal.value);
-  }
   function getCents(centWt,p,w) {
     return centWt*Math.round((1200 * p/w)/centWt);
   }
@@ -98,7 +81,6 @@ function movePitch(e) {
     var color = colorange(cents, 1200);
     var rgb = 'rgba(' + color.join(',') + ',127)';
     el.setAttribute('fill', rgb);
-
   }
 }
 
@@ -165,19 +147,22 @@ function rept(e) {
     //rePath(boo,pts);
   }
   else {
-    var inid = pts.length;
-    var mind=0;
+    var inid = pts.length-1;
     var ptd=undefined;
-    var bcpts = expand(pts,pts.length,true); // gives midpoints
-    
+    var mind=0;
+    var scale = 2;
+    var bcpts = expand(pts,(pts.length)*scale,true); // gives midpoints
+    var bci=bcpts.length-1;
     for (var i = 0; i < bcpts.length; i++) {
       var dx = Math.pow(cx-bcpts[i].x,2);
       var dy = Math.pow(cy-bcpts[i].y,2);
       var d = Math.sqrt((dx + dy)/2);
       if (mind==0 || d < mind) {
         mind = d;
-        inid=i+1;
-        inid=i+1;
+        bci = i;
+        inid=Math.max(1,
+              Math.min(pts.length-1,
+                Math.round((i+scale/2)/scale)));
         ptd={x: cx, y: cy, toString: function() { return this.x + ' ' + this.y;}};
       }
     }
@@ -202,28 +187,46 @@ function rept(e) {
   }
 }
 
+var slide = 0;
+var aid = 0;
 function type(e) {
   //key handler
   var k =e.keyIdentifier;
-  if((['Up','Down','Left','Right']).indexOf(k)>=0) {
-    var el = document.getElementById('text');
-    if (el==undefined) 
-      el=document.createElement('div');
-    el.id='text';
-    //el.innerText='testing';
-    if(!el.parentElement) 
-      document.body.appendChild(el);
-    
-    el.className='roll' + k;
-    if (['Down','Right'].indexOf(k)>=0) 
-      el.addEventListener('animationend',function(e) {
-        document.body.removeChild(el);
-    });
+  var arrows = ['Up','Right','Left','Down'];
+  if(arrows.indexOf(k)>=0) {
+    var el = document.getElementById('slide'+slide);
+    if (arrows.indexOf(k) % 2 != 0) {
+      slide += 1; 
+      aid = (aid+1) % 4;
+    }
+    if (el)
+      el.className='roll' + k;
   }
   else if(e.keyCode==27) { //escape
-    var el = document.getElementById('text');
-    if (el && el.parentElement)
-      el.parentElement.removeChild(el);
+    newWave = undefined;
+  }
+  else if(e.keyCode>=48 && e.keyCode <=57) { //num key
+    k = e.keyCode-48;
+    if (e.altKey) { //record sound
+      var path = [];
+      for (var i = 0; i < pts.length; i++) {
+        path.push(pts[i].x);
+        path.push(pts[i].y);
+      }
+      samplePaths[k]=path;
+    }
+    else { //load sound
+      var newpts=[];
+      var path = samplePaths[k];
+      for (var i = 1; i < path.length; i+=2) {
+        newpts.push({x: path[i-1], y: path[i], toString: function() { return this.x + " " + this.y; }});
+      }
+      clearControls(boo);
+      clearBCs(boo);
+      pts = newpts;
+      drawControls(boo);
+      reWave(pts,boo.height.baseVal.value, boo.width.baseVal.value);
+    }
   }
 }
 

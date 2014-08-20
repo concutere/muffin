@@ -10,6 +10,7 @@ function addControl(svg,name, x, y) {
   var p = document.createElementNS(svgNS,"circle");
   svg.appendChild(p);
   p.id = name;
+  p.className = 'control';
   p.setAttribute('strokeWidth',0);
   p.setAttribute('fill','orangered');
   p.setAttribute('cx', x);
@@ -22,6 +23,7 @@ function addBC(svg,name, x, y) {
   var p = document.getElementById('bc'+name) || document.createElementNS(svgNS,"circle");
   svg.appendChild(p);
   p.id = 'bc'+name;
+  p.className = 'bc';
   p.setAttribute('class','bc');
   p.setAttribute('stroke','#c6f');
   p.setAttribute('strokeWidth',1);
@@ -53,3 +55,27 @@ if (!includeSvgPath) return;
   }
 }
 
+function clearControls(svg) {
+  if(pts)
+    pts.forEach(function (e,i,a) {
+      var el = document.getElementById('control'+i);
+      if (el)
+        svg.removeChild(el);
+    });
+}
+
+
+function clearBCs(svg) {
+  if(pts)
+    pts.forEach(function (e,i,a) {
+      var el = document.getElementById('bc'+i);
+      if (el)
+        svg.removeChild(el);
+    });
+}
+
+function drawControls(svg) {
+  for (var i = 1; i < pts.length-1; i++) {
+    addControl(svg,'control'+(i),pts[i].x, pts[i].y);      
+  }
+}

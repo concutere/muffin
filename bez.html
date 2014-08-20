@@ -3,10 +3,15 @@
   <head>
     <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
     <style>
-    #text {
+    div {
       position:absolute;
+      width:100%;
       font-size:36pt;
       font-family:Roboto,Helvetica,Arial,sans-serif;
+    }
+    
+    .hide {
+      display:none;
     }
     
       .rollUp {
@@ -96,6 +101,11 @@
     <svg id=boo width="100%" height="100%" style="position:absolute;top:0px;left:0px;margin:0px;padding:0px;border:0px">
       <rect id=pitch x=0 y=0 width=50 height=5 rx=5 ry=5 fill="lightslategray"/>
     </svg>
+    
+    <div id="slide0" class=hide>WHAT IS THE SHAPE OF SOUND?</div>
+    <div id="slide1" class=hide>WEB AUDIO OVERVIEW</div>
+    <div id="slide2" class=hide>BEZIER CURVES</div>
+    <div id="slide3" class=hide>SOUND OF BEZIERS</div>
   </body>
   <script src="events.js"></script>
  </html>
