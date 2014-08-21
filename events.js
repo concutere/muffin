@@ -188,7 +188,6 @@ function rept(e) {
 }
 
 var slide = 0;
-var aid = 0;
 function type(e) {
   //key handler
   var k =e.keyIdentifier;
@@ -197,7 +196,6 @@ function type(e) {
     var el = document.getElementById('slide'+slide);
     if (arrows.indexOf(k) % 2 != 0) {
       slide += 1; 
-      aid = (aid+1) % 4;
     }
     if (el)
       el.className='roll' + k;
@@ -207,7 +205,10 @@ function type(e) {
   }
   else if(e.keyCode>=48 && e.keyCode <=57) { //num key
     k = e.keyCode-48;
-    if (e.altKey) { //record sound
+    if (e.shiftKey) {
+      slide = k;
+    }
+    else if (e.altKey) { //record sound
       var path = [];
       for (var i = 0; i < pts.length; i++) {
         path.push(pts[i].x);
