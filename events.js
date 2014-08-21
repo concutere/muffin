@@ -218,6 +218,13 @@ function type(e) {
   else if(e.keyCode==67) { // C - custom
     wave='custom';
   }
+  else if (e.keyCode==65) { // A - toggle sound graph
+    var g = document.getElementById('graph');
+    if (g.className.baseVal == 'hide')
+      g.className.baseVal = '';
+    else 
+      g.className.baseVal = 'hide';
+  }
   else if(e.keyCode>=48 && e.keyCode <=57) { //num key
     k = e.keyCode-48;
     if (e.shiftKey) {

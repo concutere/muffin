@@ -16,10 +16,12 @@
       var ctx = getCtx();
       var gain = ctx.createGain();
       var oscillator = ctx.createOscillator();
+      var analyser = ctx.createAnalyser();
       gain.gain.value=1;
       oscillator.type = wave || 'custom';
       oscillator.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(analyser);
+      analyser.connect(ctx.destination);
       if (isNaN(hz) && !mute)
         oscillator.frequency.value=hz=initHz;
       
@@ -38,6 +40,15 @@
           }
           oscillator.frequency.value = hz;
           oscillator.detune.value = cents;
+          
+          //TODO analyser
+          
+          var freqs = new Uint8Array(analyser.frequencyBinCount);
+          analyser.getByteFrequencyData(freqs);
+          graphByteFreqs(freqs);
+          var times = new Uint8Array(analyser.frequencyBinCount);
+          analyser.getByteTimeDomainData(times);
+          graphByteTimes(times);
           requestAnimationFrame(recur);
         }
       };

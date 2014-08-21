@@ -79,3 +79,57 @@ function drawControls(svg) {
     addControl(svg,'control'+(i),pts[i].x, pts[i].y);      
   }
 }
+
+function graphByteFreqs(freqs) {
+  var g = document.getElementById('graph');
+  if(g.className.baseVal=='hide') return;
+  
+  var svg = document.getElementById('boo');
+  var h = svg.height.baseVal.value;
+  var w = svg.width.baseVal.value;
+  var step = Math.floor(freqs.length / w);
+  var steps = w;
+  var stepw = step;
+
+  for (var i = 0; i < freqs.length; i+=stepw) {
+    var ratio = freqs[i]; // / 256; 
+    var steph = ratio; // * h;
+    var y = h - steph - 1;
+    var el = document.getElementById('bytefreq'+i) || document.createElementNS(svgNS,'rect')
+    el.id='bytefreq'+i;
+    el.setAttribute('fill','chartreuse');
+    el.setAttribute('x', i * stepw);
+    el.setAttribute('y', y);
+    el.setAttribute('width', stepw);
+    el.setAttribute('height',steph);
+    if (!el.parentElement)
+      g.appendChild(el);
+  }
+}
+
+function graphByteTimes(times) {
+  var g = document.getElementById('graph');
+  if(g.className.baseVal=='hide') return;
+
+  var svg = document.getElementById('boo');
+  var h = svg.height.baseVal.value;
+  var w = svg.width.baseVal.value;
+  var step = 1;//Math.floor(times.length / w);
+  var steps = w;
+  var stepw = step;
+
+  for (var i = 0; i < times.length; i+=1) {
+    var ratio = times[i]; // / 256; 
+    var steph = ratio; // * h;
+    var y = h - steph - 1;
+    var el = document.getElementById('bytetime'+i) || document.createElementNS(svgNS,'rect')
+    el.id='bytetime'+i;
+    el.setAttribute('fill','#f0f');
+    el.setAttribute('x', i * stepw);
+    el.setAttribute('y', y);
+    el.setAttribute('width', 2);
+    el.setAttribute('height',2);
+    if (!el.parentElement)
+      g.appendChild(el);
+  }
+}
