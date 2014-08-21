@@ -15,12 +15,9 @@
     function stream() {
       var ctx = getCtx();
       var gain = ctx.createGain();
-
       var oscillator = ctx.createOscillator();
       gain.gain.value=1;
-      oscillator.type = 'custom';
-      
- 
+      oscillator.type = wave || 'custom';
       oscillator.connect(gain);
       gain.connect(ctx.destination);
       if (isNaN(hz) && !mute)
@@ -35,7 +32,7 @@
           return;
         }
         else {
-          if(newWave) {
+          if(newWave && wave=='custom') {
             oscillator.setPeriodicWave(newWave);
             //newWave = undefined;
           }

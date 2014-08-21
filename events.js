@@ -203,6 +203,21 @@ function type(e) {
   else if(e.keyCode==27) { //escape
     newWave = undefined;
   }
+  else if(e.keyCode==83) { // S - sine 
+    wave='sine';
+  }
+  else if(e.keyCode==84) { // T - triangle
+    wave='triangle';
+  }
+  else if(e.keyCode==87) { // W - sawtooth
+    wave='sawtooth';
+  }
+  else if (e.keyCode==81) { // Q - square
+    wave='square';
+  }
+  else if(e.keyCode==67) { // C - custom
+    wave='custom';
+  }
   else if(e.keyCode>=48 && e.keyCode <=57) { //num key
     k = e.keyCode-48;
     if (e.shiftKey) {
