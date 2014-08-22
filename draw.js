@@ -15,7 +15,7 @@ function addControl(svg,name, x, y) {
   p.setAttribute('fill','orangered');
   p.setAttribute('cx', x);
   p.setAttribute('cy', y);
-  p.setAttribute('r', 15);
+  p.setAttribute('r', 10);
   return p;
 }
   
@@ -25,8 +25,8 @@ function addBC(svg,name, x, y) {
   p.id = 'bc'+name;
   p.className = 'bc';
   p.setAttribute('class','bc');
-  p.setAttribute('stroke','#c6f');
-  p.setAttribute('strokeWidth',1);
+  p.setAttribute('stroke','#f0f');
+  p.setAttribute('stroke-width',1);
   p.setAttribute('fill','transparent');
   p.setAttribute('cx', x);
   p.setAttribute('cy', y);
@@ -39,7 +39,7 @@ function addPath(svg,pts) {
   svg.appendChild(p);
   p.id='path';
   p.setAttribute('stroke','slategray');
-  p.setAttribute('strokeWidth',5);
+  p.setAttribute('stroke-width',2);
   p.setAttribute('fill','transparent');
   p.setAttribute('d',getD(pts));
 
@@ -67,11 +67,11 @@ function clearControls(svg) {
 
 function clearBCs(svg) {
   if(pts)
-    pts.forEach(function (e,i,a) {
+    for (var i = 0; i <= 4096; i+=64) {
       var el = document.getElementById('bc'+i);
       if (el)
         svg.removeChild(el);
-    });
+    }
 }
 
 function drawControls(svg) {
@@ -81,13 +81,14 @@ function drawControls(svg) {
 }
 
 function graphByteFreqs(freqs) {
+  if (!drawFreqs) return;
   var g = document.getElementById('graph');
   if(g.className.baseVal=='hide') return;
   
   var svg = document.getElementById('boo');
   var h = svg.height.baseVal.value;
   var w = svg.width.baseVal.value;
-  var step = Math.floor(freqs.length / w);
+  var step = Math.max(1,Math.floor(freqs.length / w));
   var steps = w;
   var stepw = step;
 
@@ -114,7 +115,7 @@ function graphByteTimes(times) {
   var svg = document.getElementById('boo');
   var h = svg.height.baseVal.value;
   var w = svg.width.baseVal.value;
-  var step = 1;//Math.floor(times.length / w);
+  var step = Math.max(1,Math.floor(times.length / w));
   var steps = w;
   var stepw = step;
 
@@ -127,9 +128,17 @@ function graphByteTimes(times) {
     el.setAttribute('fill','#f0f');
     el.setAttribute('x', i * stepw);
     el.setAttribute('y', y);
-    el.setAttribute('width', 2);
-    el.setAttribute('height',2);
+    el.setAttribute('width', stepw*2);
+    el.setAttribute('height',stepw*2);
     if (!el.parentElement)
       g.appendChild(el);
+  }
+}
+
+function clearFreqs(g) {
+  for (var i = 0; i <= 1024; i++) {
+    var el = document.getElementById('bytefreq'+i);
+    if (el)
+      g.removeChild(el);
   }
 }

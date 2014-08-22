@@ -74,13 +74,14 @@
     
       // DEBUG CONSTS ...
       var bezSize = 4096;
+      var volume = 1;
       var wave = 'custom';
       var mute = false;
       
       var includeSvgPath = true;;
       var useDeCasteljauPath = true;
-      var pitchColor = true;
-      var drawBCs = true;
+      var drawBCs = false;
+      var drawFreqs = false;
 </script>
     <script src="dft.js"></script>
     
@@ -88,28 +89,38 @@
 
     <script src="play.js"></script>
     
-    <script src="colors.js"></script>
     <script src="draw.js"></script>
    
     <script>
       //todo ...
       var samplePaths = [
         [0, 495.5, 57, 286, 257, 179, 376, 393, 451, 592, 647, 922, 882, 655, 944, 495.5], //sine wave imposter
-        [0, 495.5, 72, 941, 105, 107, 160, 318, 207, 51, 302, 778, 353, 29, 543, 923, 767, 324, 944, 495.5], //simple overtones, almost woodwidish
+        [0, 495.5, 72, 941, 105, 107, 160, 318, 207, 51, 302, 778, 353, 29, 543, 923, 767, 324, 944, 495.5], //simple overtones, almost woodwindish
         [0, 495.5, 16, 945, 12, 982, 358, 969, 805, 483, 951, 77, 618, 13, 488, 202, 458, 244, 434, 204, 283 -2, -3, 73, 89, 432, 467, 978, 930, 959, 927, 969, 930, -1, 904, 10, 2, -5, 2, 48, 15, 914, 25, 986, 946, 997, 934, 978, 944, 495.5] //TODO make a better boxy, distorted tone
       ];
     </script>  
   </head>
-  <body style="overflow:hidden">
-    <svg id=boo width="100%" height="100%" style="position:absolute;top:0px;left:0px;margin:0px;padding:0px;border:0px">
+  <body style="overflow:hidden;background-color:white;">
+    <svg id=boo width="100%" height="100%" style="position:absolute;top:0px;left:0px;margin:0px;padding:0px;border:0px;background-color:transparent">
       <rect id=pitch x=0 y=0 width=50 height=5 rx=5 ry=5 fill="lightslategray"/>
       <g id=graph class='hide'></g>
     </svg>
-
     <div id="slide0" class=hide>WHAT IS THE SHAPE OF SOUND?</div>
-    <div id="slide1" class=hide>WEB AUDIO</div>
-    <div id="slide2" class=hide>BEZIER CURVES</div>
-    <div id="slide3" class=hide>SOUND OF BEZIERS</div>
+    <div id="slide1" class=hide><img height="100%" src="img/waveforms.svg"/></div>
+    <div id="slide2" class=hide><img height="100%" src="img/Fourier_Series.svg"/></div>
+    <div id="slide3" class=hide>WEB AUDIO</div>
+    <div id="slide4" class=hide><img src="img/web-audio-api-flowchart.png"/></div>
+    <div id="slide5" class=hide style="font-size:2.5em">
+      WE'LL ONLY BE USING:
+    <ul><li>1 OscillatorNode for sound synthesis & pitch control</li>
+    <li>1 GainNode for volume</li>
+    <li>1 AnalyserNode to graph the final sound output</li>
+    </ul>
+    </div>
+    <div id="slide6" class=hide>BEZIER CURVES</div>
+    <div id="slide7" class=hide><img src="img/bernstein-polys.png"/></div>
+    <div id="slide8" class=hide style="font-size:2.5em">Information is not knowledge<p>Knowledge is not truth<p>Truth is not beauty<p>Beauty is not love<p>Love is not music<p><strong style="font-size:1.25em">MUSIC IS THE BEST</strong><p style="right:10%">-Frank Zappa</div>
+
   </body>
   <script src="events.js"></script>
  </html>

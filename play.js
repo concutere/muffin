@@ -17,7 +17,7 @@
       var gain = ctx.createGain();
       var oscillator = ctx.createOscillator();
       var analyser = ctx.createAnalyser();
-      gain.gain.value=1;
+      gain.gain.value=volume;
       oscillator.type = wave || 'custom';
       oscillator.connect(gain);
       gain.connect(analyser);

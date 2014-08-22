@@ -77,11 +77,6 @@ function movePitch(e) {
   }
   var el = document.getElementById('pitch');
   el.setAttribute('x', e.clientX-25);
-  if (pitchColor) {
-    var color = colorange(cents, 1200);
-    var rgb = 'rgba(' + color.join(',') + ',127)';
-    el.setAttribute('fill', rgb);
-  }
 }
 
 function move(e) {
@@ -215,8 +210,16 @@ function type(e) {
   else if (e.keyCode==81) { // Q - square
     wave='square';
   }
+  else if(e.keyCode==70) { // F - toggle show freqs
+    drawFreqs=!drawFreqs;
+    clearFreqs(document.getElementById('graph'));
+  }
   else if(e.keyCode==67) { // C - custom
     wave='custom';
+  }
+  else if(e.keyCode==66) { // B - toggle BCs
+    drawBCs=!drawBCs;
+    clearBCs(boo);
   }
   else if (e.keyCode==65) { // A - toggle sound graph
     var g = document.getElementById('graph');
