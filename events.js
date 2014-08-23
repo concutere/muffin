@@ -3,6 +3,31 @@ var boo = document.getElementById('boo');
 var ctlid = undefined;
 var lastPitch = undefined;
 
+function savePathsLocal(paths) {
+  if(paths==undefined) paths || samplePaths;
+  for (var i =0; i < paths.length; i++) {
+    window.localStorage.setItem('samplePath'+i, paths[i]);
+  }
+}
+
+function loadPathsLocal() {
+  var paths = [];
+  for (var i = 0; i < 10; i++) {
+    var tmp = window.localStorage.getItem('samplePath'+i);
+    if(tmp) {
+      paths[i]=tmp.split(',');
+      paths[i]=paths[i].map(function(e,i,a) { return parseInt(e); });
+    }
+  }
+  if (paths.length > 1)
+    samplePaths=paths;
+  return paths;
+}
+
+function clearPathsLocal() {
+  window.localStorage.removeItem('samplePaths');
+}
+
 var pts=[];
 function init(e) {
   var controlpts=8;
