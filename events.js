@@ -182,6 +182,7 @@ function rept(e) {
   }
 }
 
+//TODO move slide related stuff to separate file
 var slide = 0;
 function type(e) {
   //key handler
