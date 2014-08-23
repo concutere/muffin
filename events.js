@@ -211,6 +211,9 @@ function type(e) {
   else if (e.keyCode==81) { // Q - square
     wave='square';
   }
+  else if (e.keyCode==82) { // R - ramp/vary pitch by octaves over seconds
+    rampHz=!rampHz;
+  }
   else if(e.keyCode==70) { // F - toggle show freqs
     drawFreqs=!drawFreqs;
     clearFreqs(document.getElementById('graph'));

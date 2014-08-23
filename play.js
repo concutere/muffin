@@ -12,19 +12,29 @@
 
     var hz, minHz=110, initHz=261.625565, cents=0; //middle C
     var newWave=undefined;
+    var bendStep=2,lastBend=0;
     function stream() {
       var ctx = getCtx();
       var gain = ctx.createGain();
       var oscillator = ctx.createOscillator();
       var analyser = ctx.createAnalyser();
+      var startedAt = undefined; //TODO
       gain.gain.value=volume;
       oscillator.type = wave || 'custom';
       oscillator.connect(gain);
       gain.connect(analyser);
       analyser.connect(ctx.destination);
-      if (isNaN(hz) && !mute)
-        oscillator.frequency.value=hz=initHz;
-      
+      if (isNaN(hz) && !mute) {
+        oscillator.frequency.value=hz=initHz/bendStep;
+        oscillator.frequency.setValueAtTime(hz,ctx.currentTime);
+        if (rampHz) {
+          /* TODO recur, no loop
+          */
+          for (var i = 0; i <= 2000; i++) {
+            oscillator.frequency.linearRampToValueAtTime(hz*(i % 2 == 0 ? 1 : bendStep*2), i*2.5);
+          }
+        }
+       }
       var recur = function recur() {
         if (isNaN(hz)) {
           try {
@@ -40,9 +50,7 @@
           }
           oscillator.frequency.value = hz;
           oscillator.detune.value = cents;
-          
-          //TODO analyser
-          
+         
           var freqs = new Uint8Array(analyser.frequencyBinCount);
           analyser.getByteFrequencyData(freqs);
           graphByteFreqs(freqs);
