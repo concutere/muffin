@@ -71,28 +71,14 @@
 // TODO refactor drawing bits out
 function reWave(pts,h,w) {
   var ctx = getCtx();
-  var cpts = expand(pts,bezSize);
-  var svg = document.getElementById('boo');
+  var cpts = dc(pts,64);
   var vals=vals||new Float32Array(cpts.length);
-  if (includeSvgPath && useDeCasteljauPath) {
-    //todo move to beginning?
-    var d = "M " + cpts[0].x + ' ' + cpts[0].y ;
-    d = cpts.reduce(function(p,c,i,a) {
-      return p + " L " + c.x + ' ' + c.y;
-    },d);
-    var path = document.getElementById('path');
-    if (path)
-      path.setAttribute('d',d);
-  }
   for (var i = 0; i < cpts.length; i++) {
-    if(drawBCs && i % (cpts.length/64) == 0) {
-      addBC(svg,i,cpts[i].x,cpts[i].y);
-    }
     // using x can be good for "interesting" control options, less so for making sense of the math
     vals[i]=cpts[i].y;
   }
-  
-  var fft = new FFT(bezSize);
+  redrawWave(cpts,h,w);
+  var fft = new FFT(cpts.length);
   var trans = fft.forward(vals);
   return ctx.createPeriodicWave(trans.real,trans.imag);
 }    
