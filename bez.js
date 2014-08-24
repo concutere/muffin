@@ -108,8 +108,46 @@ function midpt(p0,p1,ratio) {
   return {x:px, y: py, toString: function() { return px + " "+ py}};
 }
 
-function addpts(p0,p1,ratio) {
-  return {x:(p0.x+p1.x)/ratio, y: (p0.y+p1.y)/ratio, toString: function() { return px + " "+ py}};
+function recubic(p0,p1,p2,p3) {
+  var pts=[];
+  var s0=(p0.x/p0.y);
+  var s1=p1.x/p1.y;
+  var s2 =p2.x/p2.y;
+  var s3=p3.x/p3.y;
+
+  var q0=midpt(p0,p1,t);
+  var q1=midpt(p1,p2,t);
+  var q2=midpt(p2,p3,t);
+  var r0=midpt(q0,q1,t);
+  var r1=midpt(q1,q2,t);
+  var p=midpt(r0,r1,t);
+  
+  if(Math.abs(s0-s1) < 0.1 && Math.abs(s1-s2) < 0.1 && Math.abs(s2-s3) < 0.1)
+    return [p];
+  else {
+    pts=pts.concat(recubic(p0,q0,r0,p));
+    pts=pts.concat(recubic(p,r1,q2,p3));
+  }
+  
+  return pts;
+}
+
+function requad(p0,p1,p2) {
+  var pts=[];
+  var s0=(p0.x/p0.y);
+  var s1=p1.x/p1.y;
+  var s2 =p2.x/p2.y;
+
+  var q0=midpt(p0,p1);
+  var q1=midpt(p1,p2);
+  var r0=midpt(q0,q1);
+  if(Math.abs(s0-s1) < 0.1 && Math.abs(s1-s2) < 0.1)
+    return [r0];
+  else {
+    pts=pts.concat(requad(p0,q0,r0));
+    pts=pts.concat(requad(r0,q1,p2));
+  }
+  return pts;
 }
 
 function dc(pts,size) {
@@ -117,30 +155,24 @@ function dc(pts,size) {
   var tpts=([pts[0]]).concat(pts);
   var len=tpts.length;
   var dcpts=[];
+  var order=2; //quad or cubic...
   var step=((len-2)/size)/2;
-  var p0=tpts[0];
-  for (var t = 0; t < 1.0; t+=step) {
-    p0=tpts[0]
-    for (var i = 2; i <len;i++) {
-      //var ps=[];
-      p1=tpts[i-2]
+    for (var i = order; i <len;i+=1) {
+      //var p0=tpts[i-3]
+      var p1=tpts[i-2];
       var p2=tpts[i-1];
       var p3=tpts[i];
-      /*var q0=midpt(p0,p1,t);
-      var q1=midpt(p1,p2,t);
-      var q2=midpt(p2,p3,t);
-      var r0=midpt(q0,q1,t);
-      var r1=midpt(q1,q2,t);
-      var p=midpt(r0,r1,t);*/
-      //var p=quadPt(p0,p1,p2,t);
-      var p=quadPt(p0,p1,p2,t);
-      var q=quadPt(p1,p2,p3,t);
-      var r=quadPt(p0,p,q,t);
-      //if (i % 4 == 0)
-      //var py=quadPt(p0.y,p1.y,p2.y);
-      dcpts.push(p);
-      p0=p1;
-    }
+
+      if(i%order==0) { //endpoints
+        dcpts.push(p1);
+        dcpts=dcpts.concat(requad(p1,p2,p3));
+      //var pt=requad(p1,p2,p3,t));
+      }      
+      else {
+        var m1 = midpt(p1,p2);
+        var m2 = midpt(p2,p3);
+        dcpts=dcpts.concat(requad(m1,p2,m2));
+      }
   }
   /*if (dcpts.length < size/2)
     return dc(dcpts,size);
