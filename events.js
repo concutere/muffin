@@ -43,7 +43,7 @@ function init(e) {
   path=[];
   for (var i = 0; i <= 1; i+=1/(controlpts-1)) {
     var xx = Math.round(i * w)
-    var pt = { x: xx, y: yy, toString: function() { return this.x + ' ' + this.y; } };
+    var pt = newPt(xx, yy);
     pts.push(pt);
     path.push(xx);
     path.push(yy);
@@ -183,11 +183,11 @@ function rept(e) {
         inid=Math.max(1,
               Math.min(pts.length-1,
                 Math.round((i+scale/2)/scale)));
-        ptd={x: cx, y: cy, toString: function() { return this.x + ' ' + this.y;}};
+        ptd=newPt(cx,cy);
       }
     }
     if (ptd==undefined) {
-      ptd={x: pts[pts.length-1].x, y: pts[pts.length-1].y, toString: function() { return this.x + ' ' + this.y;}};
+      ptd=newPt(pts[pts.length-1].x, pts[pts.length-1].y);
       inid=pts.length-1;
     }
 
@@ -276,7 +276,7 @@ function type(e) {
       if (!path || path.constructor != Array)
         return;
       for (var i = 1; i < path.length; i+=2) {
-        newpts.push({x: path[i-1], y: path[i], toString: function() { return this.x + " " + this.y; }});
+        newpts.push(newPt(path[i-1], path[i]));
       }
       clearControls(boo);
       clearBCs(boo);

@@ -71,14 +71,30 @@
 // TODO refactor drawing bits out
 function reWave(pts,h,w) {
   var ctx = getCtx();
-  var cpts = dc(pts,64);
+  var cpts = expand(pts,bezSize);
+  var svg = document.getElementById('boo');
   var vals=vals||new Float32Array(cpts.length);
-  for (var i = 0; i < cpts.length; i++) {
-    // using x can be good for "interesting" control options, less so for making sense of the math
-    vals[i]=cpts[i].y;
+  if (includeSvgPath && useDeCasteljauPath) {
+    //todo move to beginning?
+    var d = "M " + cpts[0].x + ' ' + cpts[0].y ;
+    d = cpts.reduce(function(p,c,i,a) {
+      return p + " L " + c.x + ' ' + c.y;
+    },d);
+    var path = document.getElementById('path');
+    if (path)
+      path.setAttribute('d',d);
   }
-  redrawWave(cpts,h,w);
-  var fft = new FFT(cpts.length);
-  var trans = fft.forward(vals);
+    var p=document.getElementById('path'); 
+    var tlen=p.getTotalLength();
+    for (var i = 0; i < cpts.length; i++) {
+      //var pt = p.getPointAtLength((i/cpts.length)*tlen);
+      if(drawBCs && i % (cpts.length/64) == 0) {
+        addBC(svg,i,/*pt.x, pt.y);//*/cpts[i].x,cpts[i].y);
+      }
+      vals[i]=cpts[i].y;//pt.y;
+  }
+  
+  var fft = new FFT(bezSize);
+  var trans = fft.forward(Array.prototype.slice.call(vals,0,bezSize));
   return ctx.createPeriodicWave(trans.real,trans.imag);
 }    
