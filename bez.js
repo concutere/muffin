@@ -30,7 +30,9 @@
   }
 
   function invertPt(x, p) {
-    if (x.x == p.x && x.y == p.y)
+    if (!x || !p)
+      console.log('invertPt bad args \n');
+    else if (x.x == p.x && x.y == p.y)
       return newPt(p.x, p.y);
     else
       return newPt(invert(x.x,p.x), invert(x.y, p.y));
@@ -48,16 +50,16 @@
     skipPad = true is intended to find all midpoints (current assumption size = pts.length)
     if more than 4 points provided, will construct a series of sub-curves (quadratics). This curve has the same general shape as what svg would draw with a path using S to chain the points but the actual line of the curve is off center from it (S-path seems to make more extreme curvatures at the control points)
 ***/
-function expand(pts, size, skipPad) {
+function expand(pts, size) {
 
   
   if (pts.length > 4) {
     var start = pts[0];
-    var cpre = start;
+    var cpre = start;//invertPt(pts[1],start);
     var segs=[];
-    for (var p = 1; p < pts.length; p+=2) {
+    for (var p = 0; p < pts.length; p+=2) {
       var end = pts[p];
-      var c2 = pts[p-1];
+      var c2 = p==0? end : pts[p-1];
       var c1 = invertPt(cpre,start);
       segs.push([start, c1, c2, end]);
       start = end;

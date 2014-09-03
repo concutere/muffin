@@ -72,12 +72,13 @@
 function reWave(pts,h,w) {
   var ctx = getCtx();
   var cpts = expand(pts,bezSize);
+  if (cpts.length < 3) return;//min pts for cubic bezier
   var svg = document.getElementById('boo');
   var vals=vals||new Float32Array(cpts.length);
   if (includeSvgPath && useDeCasteljauPath) {
     //todo move to beginning?
     var d = "M " + cpts[0].x + ' ' + cpts[0].y ;
-    d = cpts.reduce(function(p,c,i,a) {
+    d = cpts.slice(Math.floor(cpts.length/pts.length)).reduce(function(p,c,i,a) {
       return p + " L " + c.x + ' ' + c.y;
     },d);
     var path = document.getElementById('path');
@@ -85,13 +86,11 @@ function reWave(pts,h,w) {
       path.setAttribute('d',d);
   }
     var p=document.getElementById('path'); 
-    var tlen=p.getTotalLength();
     for (var i = 0; i < cpts.length; i++) {
-      //var pt = p.getPointAtLength((i/cpts.length)*tlen);
       if(drawBCs && i % (cpts.length/64) == 0) {
-        addBC(svg,i,/*pt.x, pt.y);//*/cpts[i].x,cpts[i].y);
+        addBC(svg,i,cpts[i].x,cpts[i].y);
       }
-      vals[i]=cpts[i].y;//pt.y;
+      vals[i]=cpts[i].y;
   }
   
   var fft = new FFT(bezSize);

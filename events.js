@@ -30,7 +30,7 @@ function clearPathsLocal() {
 
 var pts=[];
 function init(e) {
-  var controlpts=8;
+  var controlpts=9;
   var svg = document.getElementById('boo');
   var w = svg.width.baseVal.value;
   var h = svg.height.baseVal.value;
@@ -143,22 +143,23 @@ function rept(e) {
     var ctlid = parseInt(el.id.slice(7));
     if (isNaN(ctlid)) ctlid = pts.length-2;
     var del = document.getElementById('control'+ctlid);
-    del.parentElement.removeChild(del);
+    if (del)
+        (del.parentElement||boo).removeChild(del);
 
     //cleanup deCasteljau ref pts
     if (useDeCasteljauPath) {
       for (var i = 0; i < 64; i++) {
         el=document.getElementById('bc'+(i*64));
         if (el) 
-          (el.parent||boo).removeChild(el);
+          (el.parentElement||boo).removeChild(el);
       }
     }
     //fix control circle names for id > ctlid
-    for (var i = ctlid+1;i<pts.length-1;i++) {
+    /*for (var i = ctlid+1;i<pts.length-1;i++) {
       var rel = document.getElementById('control'+i);
       if(rel) 
         rel.id = 'control'+(i-1);
-    }
+    }*/
 
     var pre=pts.slice(0,ctlid)
     var post=pts.slice(ctlid+1);
@@ -170,10 +171,13 @@ function rept(e) {
     var inid = pts.length-1;
     var ptd=undefined;
     var mind=0;
-    var scale = 2;
+    var scale = 8;
     var bcpts = expand(pts,(pts.length)*scale,true); // gives midpoints
     var bci=bcpts.length-1;
+    var ratio = pts.length/bcpts.length;
     for (var i = 0; i < bcpts.length; i++) {
+      if (Math.floor(i*scale % 2) != 0) //ignore control points (only adding endpoints for now ..)
+        continue;
       var dx = Math.pow(cx-bcpts[i].x,2);
       var dy = Math.pow(cy-bcpts[i].y,2);
       var d = Math.sqrt((dx + dy)/2);
@@ -182,7 +186,9 @@ function rept(e) {
         bci = i;
         inid=Math.max(1,
               Math.min(pts.length-1,
-                Math.round((i+scale/2)/scale)));
+                Math.round(i/ratio))) ;
+        if (inid % 2 != 0)
+          inid++;
         ptd=newPt(cx,cy);
       }
     }
@@ -193,17 +199,21 @@ function rept(e) {
 
     var pre = pts.slice(0,inid);
     var post = pts.slice(inid);
+    pre.push(newPt(bcpts[bci].x,bcpts[bci].y));//for control point following new pt
     pre.push(ptd);
-    pts=pre.concat(post);
-    var name ='control'+inid;
-   //fix control circle names for id > ctlid
-    for (var i = pts.length-2;inid<=i;i--) {
-      var rel = document.getElementById('control'+i);
+    //fix control circle names for id > ctlid
+    /*for (var i = 0;i<post.length;i++) {
+      var id = -1 + post.length - i;
+      var rel = document.getElementById('control'+(id+inid));
       if (rel)
-        rel.id = 'control'+(i+1);
-    }
-    addControl(boo, name,ptd.x, ptd.y);
-    //rePath(boo,pts);
+        rel.id = 'control'+(id+1+inid);
+    }*/
+    pts=pre.concat(post);
+    var name =inid;
+    //addControl(boo, name,ptd.x, ptd.y);
+    clearControls(boo);
+    drawControls(boo);
+    reWave(boo,w,h); //TODO get redrawing curve out of play module
   }
 }
 

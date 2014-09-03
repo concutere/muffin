@@ -4,19 +4,23 @@
   
 function getD(pts) {
 
-    return "M " + pts[0].x + ", " + pts[0].y + ' ' + op + ' ' + pts.join(", ");
+    return "M " + pts[0].x + ", " + pts[0].y + ' ' + op + ' ' + pts.slice(1).join(", ");
 }
 var svgNS = "http://www.w3.org/2000/svg";
 function addControl(svg,name, x, y) {
   var p = document.createElementNS(svgNS,"circle");
   svg.appendChild(p);
-  p.id = name;
+  p.id = 'control'+name;
   p.className = 'control';
   p.setAttribute('strokeWidth',0);
   p.setAttribute('fill','orangered');
   p.setAttribute('cx', x);
   p.setAttribute('cy', y);
-  p.setAttribute('r', 10);
+  p.setAttribute('r',5);
+  if (name % 2 == 0) {
+    p.setAttribute('stroke-width',1);
+    p.setAttribute('stroke','slategray');
+  }
   return p;
 }
   
@@ -77,7 +81,7 @@ function clearBCs(svg) {
 
 function drawControls(svg) {
   for (var i = 1; i < pts.length-1; i++) {
-    addControl(svg,'control'+(i),pts[i].x, pts[i].y);      
+    addControl(svg,i,pts[i].x, pts[i].y);      
   }
 }
 
@@ -159,7 +163,7 @@ function aPath(svg,id,pts) {
 }
 
 function aLine(svg,id,a,b) {
-  var p = document.createElementNS(svgNS,"line");
+  var p = document.getElementById(id) || document.createElementNS(svgNS,"line");
   svg.appendChild(p);
   p.id=id;
   p.setAttribute('stroke','limegreen');
