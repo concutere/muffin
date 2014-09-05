@@ -178,3 +178,32 @@ function aLine(svg,id,a,b) {
   
   return p;
 }
+
+//subdivides the curve defined by pts into bezSize # segmented points
+function reDraw(svg,pts) {
+  var cpts = expand(pts,bezSize);
+  if (cpts.length < 3) return;//min pts for cubic bezier
+    var path = document.getElementById('path');
+    if (includeSvgPath && useDeCasteljauPath) {
+    //Math.floor(cpts.length/pts.length)
+    //todo use path.createSegment method calls instead of building a giant string?
+    var d = "M " + cpts[0].x + ' ' + cpts[0].y ;
+    d = cpts.slice(Math.floor(cpts.length/pts.length)).reduce(function(p,c,i,a) {
+      return p + " L " + c.x + ' ' + c.y;
+    },d);
+    if (path)
+      path.setAttribute('d',d);
+  }
+  var vals=vals||new Float32Array(cpts.length);
+  for (var i = 0; i < cpts.length; i++) {
+    if (includeSvgPath && useDeCasteljauPath) {
+      //todo use createSeg method calls
+    }
+    if(drawBCs && i % (Math.floor(cpts.length/64)) == 0) {
+      addBC(document.getElementById('boo'),i,cpts[i].x,cpts[i].y);
+    }
+    vals[i]=cpts[i].y;
+  }
+  
+  return vals;
+}

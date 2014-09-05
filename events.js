@@ -125,11 +125,8 @@ function move(e) {
     ctl.setAttribute('cx',x);
     ctl.setAttribute('cy',y);
 
-    rePath(boo,pts);
-    newWave = reWave(pts,h,w); //h/2,w/2);
+    newWave = reWave(reDraw(boo,pts)); 
   }
-  //var ratio = scaleHz(y,h,2);//Math.log(1+(h-y)/h)*4;
-  //hz=ratio*minHz; 
   document.body.focus();
 }
 
@@ -167,15 +164,19 @@ function rept(e) {
 
     //rePath(boo,pts);
   }
-  else {
+  else { //insert point
     var inid = pts.length-1;
     var ptd=undefined;
     var mind=0;
     var scale = 8;
-    var bcpts = expand(pts,(pts.length)*scale,true); // gives midpoints
+    var bcpts = expand(pts,(pts.length)*scale); // gives midpoints
     var bci=bcpts.length-1;
-    var ratio = pts.length/bcpts.length;
+    var ratio = bcpts.length/(pts.length);
+    var bcs = [];
     for (var i = 0; i < bcpts.length; i++) {
+      /*if (drawBCs)
+        bcs.push(addBC(document.getElementById('boo'),'bc'+i,bcpts[i].x,bcpts[i].y));
+      */
       if (Math.floor(i*scale % 2) != 0) //ignore control points (only adding endpoints for now ..)
         continue;
       var dx = Math.pow(cx-bcpts[i].x,2);
@@ -184,11 +185,13 @@ function rept(e) {
       if (mind==0 || d < mind) {
         mind = d;
         bci = i;
-        inid=Math.max(1,
+        inid=Math.max(0,
               Math.min(pts.length-1,
                 Math.round(i/ratio))) ;
-        if (inid % 2 != 0)
-          inid++;
+        if (inid % 2 != 0 && inid > 0 && bci >  0) {
+          inid--;
+          bci--;
+        }
         ptd=newPt(cx,cy);
       }
     }
@@ -197,6 +200,11 @@ function rept(e) {
       inid=pts.length-1;
     }
 
+    /*if (drawBCs) {
+      var bc=bcs[bci];
+      bc.setAttribute('fill','fuschia');
+    }*/
+    
     var pre = pts.slice(0,inid);
     var post = pts.slice(inid);
     pre.push(newPt(bcpts[bci].x,bcpts[bci].y));//for control point following new pt
@@ -211,10 +219,10 @@ function rept(e) {
     pts=pre.concat(post);
     var name =inid;
     //addControl(boo, name,ptd.x, ptd.y);
-    clearControls(boo);
-    drawControls(boo);
-    reWave(boo,w,h); //TODO get redrawing curve out of play module
   }
+  clearControls(boo);
+  drawControls(boo);
+  reWave(reDraw(boo,pts)); //TODO get redrawing curve out of play module
 }
 
 //TODO move slide related stuff to separate file
@@ -267,6 +275,9 @@ function type(e) {
     else 
       g.className.baseVal = 'hide';
   }
+  else if (e.keyCode==77) { //M - toggle mute
+    mute=!mute;
+  }
   else if(e.keyCode>=48 && e.keyCode <=57) { //num key
     k = e.keyCode-48;
     if (e.shiftKey) {
@@ -291,8 +302,8 @@ function type(e) {
       clearControls(boo);
       clearBCs(boo);
       pts = newpts;
-      drawControls(boo);
-      newWave=reWave(pts,boo.height.baseVal.value, boo.width.baseVal.value);
+      //drawControls(boo);
+      newWave=reWave(reDraw(boo,pts));
       if(k==0)
         newWave = undefined; 
     }
