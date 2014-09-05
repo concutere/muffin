@@ -174,6 +174,7 @@ function rept(e) {
     var ratio = bcpts.length/(pts.length);
     var bcs = [];
     for (var i = 0; i < bcpts.length; i++) {
+      //todo move mathy loop to bez module ?
       /*if (drawBCs)
         bcs.push(addBC(document.getElementById('boo'),'bc'+i,bcpts[i].x,bcpts[i].y));
       */
@@ -207,8 +208,8 @@ function rept(e) {
     
     var pre = pts.slice(0,inid);
     var post = pts.slice(inid);
-    pre.push(newPt(bcpts[bci].x,bcpts[bci].y));//for control point following new pt
     pre.push(ptd);
+    pre.push(newPt(bcpts[bci].x,bcpts[bci].y));//for control point following new pt
     //fix control circle names for id > ctlid
     /*for (var i = 0;i<post.length;i++) {
       var id = -1 + post.length - i;
