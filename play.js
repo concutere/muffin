@@ -18,6 +18,7 @@
       var gain = ctx.createGain();
       var oscillator = ctx.createOscillator();
       var analyser = ctx.createAnalyser();
+      var startedAt = undefined; //TODO
       gain.gain.value=volume;
       oscillator.type = wave || 'custom';
       oscillator.connect(gain);
@@ -26,7 +27,14 @@
       if (isNaN(hz) && !mute) {
         oscillator.frequency.value=hz=initHz/bendStep;
         oscillator.frequency.setValueAtTime(hz,ctx.currentTime);
-      }
+        if (rampHz) {
+          /* TODO recur, no loop
+          */
+          for (var i = 0; i <= 2000; i++) {
+            oscillator.frequency.linearRampToValueAtTime(hz*(i % 2 == 0 ? 1 : bendStep*2), i*2.5);
+          }
+        }
+       }
       var recur = function recur() {
         if (isNaN(hz)) {
           try {
@@ -38,6 +46,7 @@
         else {
           if(newWave && wave=='custom') {
             oscillator.setPeriodicWave(newWave);
+            //newWave = undefined;
           }
           oscillator.frequency.value = hz;
           oscillator.detune.value = cents;
@@ -60,10 +69,30 @@
     
 ///////////////////////////////////
 // TODO refactor drawing bits out
-function reWave(vals) {
+function reWave(pts,h,w) {
   var ctx = getCtx();
-
+  var cpts = curve(pts,bezSize);
+  var svg = document.getElementById('boo');
+  var vals=vals||new Float32Array(cpts.length);
+  if (includeSvgPath && useDeCasteljauPath) {
+    //todo move to beginning?
+    var d = "M " + cpts[0].x + ' ' + cpts[0].y ;
+    d = cpts.reduce(function(p,c,i,a) {
+      return p + " L " + c.x + ' ' + c.y;
+    },d);
+    var path = document.getElementById('path');
+    if (path)
+      path.setAttribute('d',d);
+  }
+  for (var i = 0; i < cpts.length; i++) {
+    if(drawBCs && i % (cpts.length/64) == 0) {
+      addBC(svg,i,cpts[i].x,cpts[i].y);
+    }
+    // using x can be good for "interesting" control options, less so for making sense of the math
+    vals[i]=cpts[i].y;
+  }
+  
   var fft = new FFT(bezSize);
-  var trans = fft.forward(Array.prototype.slice.call(vals,0,bezSize)); //why slice needed?
+  var trans = fft.forward(vals);
   return ctx.createPeriodicWave(trans.real,trans.imag);
 }    

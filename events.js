@@ -30,7 +30,7 @@ function clearPathsLocal() {
 
 var pts=[];
 function init(e) {
-  var controlpts=9;
+  var controlpts=8;
   var svg = document.getElementById('boo');
   var w = svg.width.baseVal.value;
   var h = svg.height.baseVal.value;
@@ -43,7 +43,7 @@ function init(e) {
   path=[];
   for (var i = 0; i <= 1; i+=1/(controlpts-1)) {
     var xx = Math.round(i * w)
-    var pt = newPt(xx, yy);
+    var pt = { x: xx, y: yy, toString: function() { return this.x + ' ' + this.y; } };
     pts.push(pt);
     path.push(xx);
     path.push(yy);
@@ -56,12 +56,16 @@ function init(e) {
   drawControls(svg,pts);
 }
 
+var drag=false;
 function down (e) { 
   if(e.srcElement.id.indexOf('control')==0) {
     ctlid = parseInt(e.srcElement.id.substr(7));
+    drag=true;
+    document.addEventListener('mousemove',move);
   }
   else if(e.srcElement.id=='pitch') {
     lastPitch = 0;
+    document.addEventListener('mousemove',movePitch);
   }
 }
 
@@ -69,7 +73,12 @@ function up(e) {
   hz=undefined;
   ctlid = undefined;
   lastPitch=undefined;
-}
+  if (drag)
+    document.removeEventListener('mousemove',move);
+  else 
+    document.removeEventListener('mousemove',movePitch);
+  drag=false;
+  }
 
 function movePitch(e) {
   if (isNaN(hz)) {
@@ -105,7 +114,7 @@ function movePitch(e) {
 }
 
 function move(e) {
-  if (ctlid == undefined)
+  if (ctlid == undefined || !drag)
     return;
     
   if (isNaN(hz)) {
@@ -125,9 +134,9 @@ function move(e) {
     ctl.setAttribute('cx',x);
     ctl.setAttribute('cy',y);
 
-    newWave = reWave(reDraw(boo,pts)); 
+    rePath(boo,pts);
+    newWave = reWave(pts,h,w); //h/2,w/2);
   }
-  document.body.focus();
 }
 
 function rept(e) {
@@ -140,23 +149,22 @@ function rept(e) {
     var ctlid = parseInt(el.id.slice(7));
     if (isNaN(ctlid)) ctlid = pts.length-2;
     var del = document.getElementById('control'+ctlid);
-    if (del)
-        (del.parentElement||boo).removeChild(del);
+    del.parentElement.removeChild(del);
 
     //cleanup deCasteljau ref pts
     if (useDeCasteljauPath) {
       for (var i = 0; i < 64; i++) {
         el=document.getElementById('bc'+(i*64));
         if (el) 
-          (el.parentElement||boo).removeChild(el);
+          (el.parent||boo).removeChild(el);
       }
     }
     //fix control circle names for id > ctlid
-    /*for (var i = ctlid+1;i<pts.length-1;i++) {
+    for (var i = ctlid+1;i<pts.length-1;i++) {
       var rel = document.getElementById('control'+i);
       if(rel) 
         rel.id = 'control'+(i-1);
-    }*/
+    }
 
     var pre=pts.slice(0,ctlid)
     var post=pts.slice(ctlid+1);
@@ -164,66 +172,45 @@ function rept(e) {
 
     //rePath(boo,pts);
   }
-  else { //insert point
+  else {
     var inid = pts.length-1;
     var ptd=undefined;
     var mind=0;
-    var scale = 8;
-    var bcpts = expand(pts,(pts.length)*scale); // gives midpoints
+    var scale = 2;
+    var bcpts = curve(pts,(pts.length)*scale,true); // gives midpoints
     var bci=bcpts.length-1;
-    var ratio = bcpts.length/(pts.length);
-    var bcs = [];
     for (var i = 0; i < bcpts.length; i++) {
-      //todo move mathy loop to bez module ?
-      /*if (drawBCs)
-        bcs.push(addBC(document.getElementById('boo'),'bc'+i,bcpts[i].x,bcpts[i].y));
-      */
-      if (Math.floor(i*scale % 2) != 0) //ignore control points (only adding endpoints for now ..)
-        continue;
       var dx = Math.pow(cx-bcpts[i].x,2);
       var dy = Math.pow(cy-bcpts[i].y,2);
       var d = Math.sqrt((dx + dy)/2);
       if (mind==0 || d < mind) {
         mind = d;
         bci = i;
-        inid=Math.max(0,
+        inid=Math.max(1,
               Math.min(pts.length-1,
-                Math.round(i/ratio))) ;
-        if (inid % 2 != 0 && inid > 0 && bci >  0) {
-          inid--;
-          bci--;
-        }
-        ptd=newPt(cx,cy);
+                Math.round((i+scale/2)/scale)));
+        ptd={x: cx, y: cy, toString: function() { return this.x + ' ' + this.y;}};
       }
     }
     if (ptd==undefined) {
-      ptd=newPt(pts[pts.length-1].x, pts[pts.length-1].y);
+      ptd={x: pts[pts.length-1].x, y: pts[pts.length-1].y, toString: function() { return this.x + ' ' + this.y;}};
       inid=pts.length-1;
     }
 
-    /*if (drawBCs) {
-      var bc=bcs[bci];
-      bc.setAttribute('fill','fuschia');
-    }*/
-    
     var pre = pts.slice(0,inid);
     var post = pts.slice(inid);
     pre.push(ptd);
-    pre.push(newPt(bcpts[bci].x,bcpts[bci].y));//for control point following new pt
-    //fix control circle names for id > ctlid
-    /*for (var i = 0;i<post.length;i++) {
-      var id = -1 + post.length - i;
-      var rel = document.getElementById('control'+(id+inid));
-      if (rel)
-        rel.id = 'control'+(id+1+inid);
-    }*/
     pts=pre.concat(post);
-    var name =inid;
-    //addControl(boo, name,ptd.x, ptd.y);
+    var name ='control'+inid;
+   //fix control circle names for id > ctlid
+    for (var i = pts.length-2;inid<=i;i--) {
+      var rel = document.getElementById('control'+i);
+      if (rel)
+        rel.id = 'control'+(i+1);
+    }
+    addControl(boo, name,ptd.x, ptd.y);
+    //rePath(boo,pts);
   }
-  clearControls(boo);
-  drawControls(boo);
-  reWave(reDraw(boo,pts)); //TODO get redrawing curve out of play module
 }
 
 //TODO move slide related stuff to separate file
@@ -276,9 +263,6 @@ function type(e) {
     else 
       g.className.baseVal = 'hide';
   }
-  else if (e.keyCode==77) { //M - toggle mute
-    mute=!mute;
-  }
   else if(e.keyCode>=48 && e.keyCode <=57) { //num key
     k = e.keyCode-48;
     if (e.shiftKey) {
@@ -298,13 +282,13 @@ function type(e) {
       if (!path || path.constructor != Array)
         return;
       for (var i = 1; i < path.length; i+=2) {
-        newpts.push(newPt(path[i-1], path[i]));
+        newpts.push({x: path[i-1], y: path[i], toString: function() { return this.x + " " + this.y; }});
       }
       clearControls(boo);
       clearBCs(boo);
       pts = newpts;
-      //drawControls(boo);
-      newWave=reWave(reDraw(boo,pts));
+      drawControls(boo);
+      newWave=reWave(pts,boo.height.baseVal.value, boo.width.baseVal.value);
       if(k==0)
         newWave = undefined; 
     }
@@ -319,7 +303,8 @@ document.addEventListener('touchstart', function (e) {
 });
 document.addEventListener('mouseup', up);
 document.addEventListener('touchend', up);
-document.addEventListener('mousemove',function(e) {
+
+function mousemove(e) {
   if (e.which == 0) {
     // no clicky, no draggy
     return;
@@ -330,11 +315,11 @@ document.addEventListener('mousemove',function(e) {
   else if(!isNaN(lastPitch)) {
     movePitch(e);
   }
-});
+}
 
-document.addEventListener('touchmove',function(e) {
+/*document.addEventListener('touchmove',function(e) {
   move(e.touches[0]);
-});
+});*/
 document.addEventListener('dblclick', rept);
 document.addEventListener('keyup',type);
 document.addEventListener('DOMContentLoaded', init);
