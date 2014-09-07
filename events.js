@@ -263,6 +263,9 @@ function type(e) {
     else 
       g.className.baseVal = 'hide';
   }
+  else if (e.keyCode==77) { //M - toggle mute
+    mute = !mute;
+  }
   else if(e.keyCode>=48 && e.keyCode <=57) { //num key
     k = e.keyCode-48;
     if (e.shiftKey) {
