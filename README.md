@@ -14,3 +14,7 @@ shaping sounds w/ bezier curves, an interactive demo with high hopes!
 - '1 - 9' select preset
 - Alt + '1 - 9' save preset to browser local storage
 - 'R' toggles pitch sweep (up/down 1 octave)
+
+
+
+Also, the shapes we're working with here are actually based on nurbs, a type of b-spline similar to beziers (segments are calculated the same but composite function is simpler as no intermediate end points need be defined).
