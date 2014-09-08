@@ -83,6 +83,7 @@ function down (e) {
 }
 
 function up(e) {
+  lastHz=hz;
   hz=undefined;
   ctlid = undefined;
   lastPitch=undefined;
@@ -138,6 +139,7 @@ function move(e) {
     return;
     
   if (isNaN(hz)) {
+    hz=lastHz;
     stream();
   }
   var h = boo.height.baseVal.value;

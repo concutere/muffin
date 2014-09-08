@@ -10,7 +10,7 @@
       return Math.pow(2,(max-val) / (max/octaves));
     } 
 
-    var hz, minHz=110, initHz=261.625565, cents=0; //middle C
+    var hz,lastHz, minHz=110, initHz=261.625565, cents=0; //middle C
     var newWave=undefined;
     var bendStep=2,lastBend=0;
     var recur;
