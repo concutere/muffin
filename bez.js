@@ -36,7 +36,7 @@
 /***
     curve divides a bezier curve into a sequence of sub-curve segments
     skipPad = true is intended to find all midpoints (current assumption size = pts.length)
-    if more than 4 points provided, will construct a series of sub-curves (quadratics). This curve has the same general shape as what svg would draw with a path using S to chain the points but the actual line of the curve is off center from it (S-path seems to make more extreme curvatures at the control points)
+    if more than 4 points provided, will construct a series of sub-curves (quadratics). This curve has the same general shape as what svg would draw with a pp using S to chain the points but the actual line of the curve is off center from it (S-pp seems to make more extreme curvatures at the control points)
 ***/
 function curve(pts, size, skipPad) {
   

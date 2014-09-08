@@ -40,24 +40,33 @@ function init(e) {
   }
   var yy = h/2;
   pts=[];
-  path=[];
-  for (var i = 0; i <= 1; i+=1/(controlpts-1)) {
-    var xx = Math.round(i * w)
+  pp=[];
+  //for (var i = 0; i <= 1; i+=1/(controlpts-1)) {
+  for (var i = 1; i < samplePaths[4].length; i+=2) {
+    var xx = samplePaths[4][i-1];//Math.round(i * w)
+    yy=samplePaths[4][i];
     var pt = { x: xx, y: yy, toString: function() { return this.x + ' ' + this.y; } };
     pts.push(pt);
-    path.push(xx);
-    path.push(yy);
+    pp.push(xx);
+    pp.push(yy);
   }
-  samplePaths = ([path]).concat(samplePaths);
+  samplePaths = ([pp]).concat(samplePaths);
   
   if (includeSvgPath) 
     addPath(svg,pts);
 
   drawControls(svg,pts);
+  
+  //pentatonic scale 'keys'
+  for (var i = 1; i <=6; i++) {
+    var e=aPentatonic(svg,i,w);
+  }
+  
+  newWave = reWave(pts,h,w);
 }
 
 var drag=false;
-function down (e) { 
+function down (e) {
   if(e.srcElement.id.indexOf('control')==0) {
     ctlid = parseInt(e.srcElement.id.substr(7));
     drag=true;
@@ -66,6 +75,10 @@ function down (e) {
   else if(e.srcElement.id=='pitch') {
     lastPitch = 0;
     document.addEventListener('mousemove',movePitch);
+  }
+  else if(e.srcElement.id.indexOf('pentatonic')==0) {
+    var i=e.srcElement.id.substr(10);
+    handlePentatonic(i);
   }
 }
 
@@ -79,6 +92,13 @@ function up(e) {
     document.removeEventListener('mousemove',movePitch);
   drag=false;
   }
+
+function handlePentatonic(i) {
+  //if (isNaN(hz))
+  i=parseInt(i);
+  hz=initHz/2 * (i+4)/5; //pentatonic harmonic series, but start lower octave or overtones from the curves could get painful
+  stream();
+}
 
 function movePitch(e) {
   if (isNaN(hz)) {
@@ -140,10 +160,11 @@ function move(e) {
 }
 
 function rept(e) {
+  if(e.clientY <=10) return;
+  var el = e.srcElement;
   var cx = e.clientX, cy = e.clientY;
   var h = boo.height.baseVal.value;
   var w = boo.width.baseVal.value;
-  var el = e.srcElement;
   if(el.id.indexOf('control')==0) {
     // remove point
     var ctlid = parseInt(el.id.slice(7));
@@ -246,7 +267,7 @@ function type(e) {
     useAdsr=!useAdsr;
   }
   else if (e.keyCode==69) { // R - toggle ADSR (basic linear)
-    useEcho=!useEcho;
+    addSustain=!addSustain;
   }
   else if(e.keyCode==70) { // F - toggle show freqs
     drawFreqs=!drawFreqs;
@@ -275,20 +296,20 @@ function type(e) {
       slide = k;
     }
     else if (e.altKey) { //record sound
-      var path = [];
+      var pp = [];
       for (var i = 0; i < pts.length; i++) {
-        path.push(pts[i].x);
-        path.push(pts[i].y);
+        pp.push(pts[i].x);
+        pp.push(pts[i].y);
       }
-      samplePaths[k]=path;
+      samplePaths[k]=pp;
     }
     else { //load sound
       var newpts=[];
-      var path = samplePaths[k];
-      if (!path || path.constructor != Array)
+      var pp = samplePaths[k];
+      if (!pp || pp.constructor != Array)
         return;
-      for (var i = 1; i < path.length; i+=2) {
-        newpts.push({x: path[i-1], y: path[i], toString: function() { return this.x + " " + this.y; }});
+      for (var i = 1; i < pp.length; i+=2) {
+        newpts.push({x: pp[i-1], y: pp[i], toString: function() { return this.x + " " + this.y; }});
       }
       clearControls(boo);
       clearBCs(boo);

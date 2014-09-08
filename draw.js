@@ -148,3 +148,33 @@ function clearFreqs(g) {
       g.removeChild(el);
   }
 }
+
+
+
+/////////////////////
+
+
+
+function aPentatonic(svg,i,w) {
+  var q = document.getElementById('pentatonic'+i) || document.createElementNS(svgNS,'rect');
+  var step = w/6;
+  var x = step * (i-1);
+  var color = 'rgb(' + Math.round(240 - 7*i) + ',' + Math.round(240 - 7*i) + ',' + Math.round(244 + 2*i) + ')';
+
+     
+  if (!q.parentElement) {
+    q.id = 'pentatonic'+i;
+    
+    q.setAttribute('class','pentatonic');
+    q.setAttribute('fill',color);
+    q.setAttribute('stroke','transparent');
+    q.setAttribute('x',x);
+    q.setAttribute('width',step);
+    q.setAttribute('height',10);
+    q.setAttribute('y',0);
+    
+    svg.appendChild(q);
+  }
+  
+  return q;
+}
