@@ -3,6 +3,8 @@
 shaping sounds w/ bezier curves, an interactive demo with high hopes!
 
 
+http://concutere.com/bez/bez.html (Chrome only for now)
+
 
 ##### commands
 - drag red dots to change shape
