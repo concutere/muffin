@@ -105,7 +105,7 @@ function reWave(pts,h,w) {
       addBC(svg,i,cpts[i].x,cpts[i].y);
     }
     // using x can be good for "interesting" control options, less so for making sense of the math
-    vals[i]=cpts[i].y;
+    vals[i]=h-cpts[i].y;
   }
   
   var fft = new FFT(bezSize);
