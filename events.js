@@ -67,17 +67,18 @@ function init(e) {
 
 var drag=false;
 function down (e) {
-  if(e.srcElement.id.indexOf('control')==0) {
-    ctlid = parseInt(e.srcElement.id.substr(7));
+  var el = e.srcElement || e.target;
+  if(el.id.indexOf('control')==0) {
+    ctlid = parseInt(el.id.substr(7));
     drag=true;
     document.addEventListener('mousemove',move);
   }
-  else if(e.srcElement.id=='pitch') {
+  else if(el.id=='pitch') {
     lastPitch = 0;
     document.addEventListener('mousemove',movePitch);
   }
-  else if(e.srcElement.id.indexOf('pentatonic')==0) {
-    var i=e.srcElement.id.substr(10);
+  else if(el.id.indexOf('pentatonic')==0) {
+    var i=el.id.substr(10);
     handlePentatonic(i);
   }
 }
@@ -142,11 +143,12 @@ function move(e) {
     hz=lastHz;
     stream();
   }
+  var el = e.srcElement || e.target;
   var h = boo.height.baseVal.value;
   var w = boo.width.baseVal.value;
   var x = e.clientX;
   var y = e.clientY;
-  var id = e.srcElement.id;
+  var id = el.id;
   if(ctlid >0 && ctlid < pts.length-1) {
     var i = ctlid;
     var ctl = document.getElementById('control'+ctlid);
@@ -163,7 +165,7 @@ function move(e) {
 
 function rept(e) {
   if(e.clientY <=10) return;
-  var el = e.srcElement;
+  var el = e.srcElement || e.target;
   var cx = e.clientX, cy = e.clientY;
   var h = boo.height.baseVal.value;
   var w = boo.width.baseVal.value;
@@ -265,10 +267,10 @@ function type(e) {
   else if (e.keyCode==81) { // Q - square
     wave='square';
   }
-  else if (e.keyCode==82) { // R - toggle ADSR (basic linear)
+  else if (e.keyCode==65) { // A - toggle ADSR (basic linear)
     useAdsr=!useAdsr;
   }
-  else if (e.keyCode==69) { // R - toggle ADSR (basic linear)
+  else if (e.keyCode==69) { // E - echo
     addSustain=!addSustain;
   }
   else if(e.keyCode==70) { // F - toggle show freqs
@@ -278,11 +280,7 @@ function type(e) {
   else if(e.keyCode==67) { // C - custom
     wave='custom';
   }
-  else if(e.keyCode==66) { // B - toggle BCs
-    drawBCs=!drawBCs;
-    clearBCs(boo);
-  }
-  else if (e.keyCode==65) { // A - toggle sound graph
+  else if (e.keyCode==71) { // G - toggle sound graph
     var g = document.getElementById('graph');
     if (g.className.baseVal == 'hide')
       g.className.baseVal = '';
