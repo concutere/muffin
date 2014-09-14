@@ -174,7 +174,7 @@ function aPentatonic(svg,i,w) {
 /////////////////////////////
 
 
-function drawWave(pts,h,w) {
+function drawWave(pts) {
   var svg = document.getElementById('boo');
   
   var p = document.getElementById('path');

@@ -89,21 +89,13 @@
     
 
 ///////////////////////////////////
-// TODO refactor drawing bits out
+
+
 function reWave(pts,h,w) {
   var ctx = getCtx();
   var cpts = curve(pts,bezSize);
   var vals=vals||new Float32Array(cpts.length);
-  if (includeSvgPath && useDeCasteljauPath) {
-    //todo no more stringies!
-    /*var d = "M " + cpts[0].x + ' ' + cpts[0].y ;
-    d = cpts.reduce(function(p,c,i,a) {
-      return p + " L " + c.x + ' ' + c.y;
-    },d);
-    var pp = document.getElementById('path');
-    if (pp)
-      pp.setAttribute('d',d);
-  */}
+
   drawWave(cpts,h,w);
   
   for (var i = 0; i < cpts.length; i++) {
