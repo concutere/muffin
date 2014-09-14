@@ -16,6 +16,8 @@
     var recur;
     
     var joe = new Joe();
+    //adsrPts maxPt(1000,200)
+    var adsrPts = [newPt(0,0),newPt(100,110), newPt(200,99), newPt(800,95), newPt(1000,0)];
     var analyser;
     function stream() {
       var ctx = getCtx(); 
@@ -78,6 +80,7 @@
           var times = new Uint8Array(analyser.frequencyBinCount);
           analyser.getByteTimeDomainData(times);
           graphByteTimes(times);
+          
           requestAnimationFrame(recur);
         }
       };

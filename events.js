@@ -6,7 +6,7 @@ var lastPitch = undefined;
 function hideEl(el, baseClass) {
   var g;
   if (typeof el == 'string')
-    g = document.getElementById('graph');
+    g = document.getElementById(el);
   else 
     g = el;
   if (g.className.baseVal == 'hide')
@@ -75,6 +75,7 @@ function init(e) {
   newWave = reWave(pts,h,w);
 }
 
+var adsrid=undefined;
 var drag=false;
 function down (e) {
   var el = e.srcElement || e.target;
@@ -91,6 +92,10 @@ function down (e) {
     var i=el.id.substr(10);
     handlePentatonic(i);
   }
+  else if (el.id.indexOf('adsr')==0) {
+    adsrid = el.id.substr(4);
+    document.addEventListener('mousemove',moveAdsr);
+  }
 }
 
 function up(e) {
@@ -98,11 +103,14 @@ function up(e) {
   hz=undefined;
   ctlid = undefined;
   lastPitch=undefined;
-  if (drag)
+  if(adsrid)
+    document.removeEventListener('mousemove',moveAdsr);
+  else if (drag)
     document.removeEventListener('mousemove',move);
   else 
     document.removeEventListener('mousemove',movePitch);
   drag=false;
+  adsrid = undefined;
   }
 
 function handlePentatonic(i) {
@@ -168,10 +176,26 @@ function move(e) {
     ctl.setAttribute('cx',x);
     ctl.setAttribute('cy',y);
 
-    //drawWave(boo,pts);
-    newWave = reWave(pts,h,w); //h/2,w/2);
+    newWave = reWave(pts,h,w);
   }
 }
+
+function moveAdsr(e) {
+  if(!adsrid) {
+    console.log('bad moveAdsr call!');
+  } 
+  var h = boo.height.baseVal.value;
+  var w = boo.width.baseVal.value;
+  var x = e.clientX;
+  var y = e.clientY;
+  var el = e.srcElement || e.target;
+  var i  = adsrid;
+  //TODO refactor fixed adsr w/h away
+  adsrPts[i]=newPt(Math.min(1000,Math.max(0,1000-x)),Math.min(200,Math.max(0,200-y)));
+  drawAdsr(adsrPts);
+}
+
+/////////////////////////////////////////////////
 
 function rept(e) {
   if(e.clientY <=10) return;
@@ -205,7 +229,6 @@ function rept(e) {
     var post=pts.slice(ctlid+1);
     pts=pre.concat(post);
 
-    //drawWave(boo,pts);
   }
   else {
     var inid = pts.length-1;
@@ -265,7 +288,7 @@ function type(e) {
   else if(e.keyCode==27) { //escape
     newWave = undefined;
   }
-  else if(e.keyCode==83) { // S - sine 
+  /*else if(e.keyCode==83) { // S - sine 
     wave='sine';
   }
   else if(e.keyCode==84) { // T - triangle
@@ -276,12 +299,10 @@ function type(e) {
   }
   else if (e.keyCode==81) { // Q - square
     wave='square';
-  }
+  }*/
   else if (e.keyCode==65) { // A - toggle ADSR (basic linear)
-    useAdsr=!useAdsr;
-  }
-  else if (e.keyCode==69) { // E - echo
-    addSustain=!addSustain;
+    hideEl('adsr');
+    drawAdsr(adsrPts);
   }
   else if(e.keyCode==70) { // F - toggle show freqs
     drawFreqs=!drawFreqs;
@@ -342,7 +363,7 @@ document.addEventListener('touchstart', function (e) {
 document.addEventListener('mouseup', up);
 document.addEventListener('touchend', up);
 
-function mousemove(e) {
+/*function mousemove(e) {
   if (e.which == 0) {
     // no clicky, no draggy
     return;
@@ -350,10 +371,13 @@ function mousemove(e) {
   if(ctlid) {
     move(e);
   }
+  else if (adsrid) {
+    moveAdsr(e);
+  }
   else if(!isNaN(lastPitch)) {
     movePitch(e);
   }
-}
+}*/
 
 /*document.addEventListener('touchmove',function(e) {
   move(e.touches[0]);

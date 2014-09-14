@@ -1,3 +1,8 @@
+
+function newPt(x, y) {
+  return {'x': x, 'y': y/*, toString: function() {return this.x + ' ' + this.y}*/};
+}
+
       //bezier functions
   function quad(x0,x1,x2,t) {
     return Math.pow(1-t,2) * x0 +

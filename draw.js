@@ -194,8 +194,52 @@ function drawWave(pts) {
   else {
     for (var i = 0; i < pts.length; i++) {
       var seg = p.pathSegList.getItem(i+1);
-      if(seg.x != pts[i].x) seg.x=pts[i].x;
-      if (seg.y != pts[i].y) seg.y=pts[i].y;
+      if(seg.x != pts[i].x) 
+        seg.x=pts[i].x;
+      if (seg.y != pts[i].y)  
+        seg.y=pts[i].y;
     }
+  }
+}
+
+
+///////////////////////////////////
+
+
+// exponentialRampToValueAtTime calc
+// v(t) = V0 * (V1 / V0) ^ ((t - T0) / (T1 - T0))
+//
+
+//TODO pts need to indicate when to use exponential / linear
+function drawAdsr(pts) {
+var w = 1000, h = 200;
+  var g= document.getElementById('adsr');
+  
+  for (var i = 0; i < pts.length; i++) {
+    if (i > 0) {
+      var l = document.getElementById('adsrl'+i) || document.createElementNS(svgNS,'line');
+      if (!l.parentElement) {
+        l.id = 'adsrl'+i;
+        l.setAttribute('stroke','purple');
+        l.setAttribute('stroke-width','0.5');
+        g.appendChild(l);
+      }
+      l.setAttribute('x1',w-pts[i-1].x);
+      l.setAttribute('y1',h-pts[i-1].y);
+      l.setAttribute('x2',w-pts[i].x);
+      l.setAttribute('y2',h-pts[i].y);
+    }
+  }
+  for (var i = 0; i < pts.length; i++) {
+    var el = document.getElementById('adsr'+i) || document.createElementNS(svgNS,'circle');
+    if(!el.parentElement) {
+      el.id = 'adsr'+i;
+      el.setAttribute('r',5);
+      el.setAttribute('fill','lightsteelblue');
+      g.appendChild(el);
+    }
+    
+    el.setAttribute('cx',w-pts[i].x);
+    el.setAttribute('cy',h-pts[i].y);
   }
 }
