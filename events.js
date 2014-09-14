@@ -52,10 +52,9 @@ function init(e) {
   var yy = h/2;
   pts=[];
   pp=[];
-  //for (var i = 0; i <= 1; i+=1/(controlpts-1)) {
-  for (var i = 1; i < samplePaths[4].length; i+=2) {
-    var xx = samplePaths[4][i-1];//Math.round(i * w)
-    yy=samplePaths[4][i];
+  for (var i = 0; i <= 1; i+=1/(controlpts-1)) {
+  //for (var i = 1; i < samplePaths[4].length; i+=2) {
+    var xx = /*samplePaths[4][i-1];*/Math.round(i * w)
     var pt = { x: xx, y: yy, toString: function() { return this.x + ' ' + this.y; } };
     pts.push(pt);
     pp.push(xx);
