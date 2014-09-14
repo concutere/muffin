@@ -1,5 +1,5 @@
 /***
-    Joe - a little library all about pitch (intonation + adsr)
+    Joe - a little library for adsr envelopes
     '...  a couple of quarts of beer, would fix it so the intonation would not offend your ear ...'
 ***/
 
@@ -8,7 +8,7 @@ if(!params) params=[newPt(0,0.1667),//start from
                     newPt(0.05,1.05),//attack
                     newPt(0.1,0.99),//decay
                     newPt(0.8,0.95),//sustain
-                    newPt(0.95,0.01),//release
+                    newPt(0.85,0.01),//release
                     ];
   var quarts = this.quarts = params;
   

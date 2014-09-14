@@ -214,14 +214,14 @@ function drawWave(pts) {
 function drawAdsr(pts) {
 var w = 1000, h = 200;
   var g= document.getElementById('adsr');
-  
+  //TODO draw faint bottom (& mid?) lines (legend?)
   for (var i = 0; i < pts.length; i++) {
     if (i > 0) {
       var l = document.getElementById('adsrl'+i) || document.createElementNS(svgNS,'line');
       if (!l.parentElement) {
         l.id = 'adsrl'+i;
-        l.setAttribute('stroke','purple');
-        l.setAttribute('stroke-width','0.5');
+        l.setAttribute('stroke','lightsteelblue');
+        l.setAttribute('stroke-width','2');
         g.appendChild(l);
       }
       l.setAttribute('x1',w-pts[i-1].x);
@@ -235,7 +235,7 @@ var w = 1000, h = 200;
     if(!el.parentElement) {
       el.id = 'adsr'+i;
       el.setAttribute('r',5);
-      el.setAttribute('fill','lightsteelblue');
+      el.setAttribute('fill','steelblue');
       g.appendChild(el);
     }
     

@@ -70,6 +70,8 @@
           oscillator.frequency.value = hz;
           oscillator.detune.value = cents;
          
+          //TODO move to draw
+          //drawGraph(analyser);
           var freqs = new Uint8Array(analyser.frequencyBinCount);
           analyser.getByteFrequencyData(freqs);
           graphByteFreqs(freqs);
@@ -98,11 +100,10 @@ function reWave(pts,h,w) {
   drawWave(cpts,h,w);
   
   for (var i = 0; i < cpts.length; i++) {
-    /*if(drawBCs && i % (cpts.length/64) == 0) {
-      addBC(svg,i,cpts[i].x,cpts[i].y);
-    }*/
-    
     //TODO how can x be used in an intuitive way?
+    // loop detection for clipping?
+    // cusps?
+    // pt diff?
     vals[i]=h-cpts[i].y;
   }
   

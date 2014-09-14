@@ -202,7 +202,17 @@ function rept(e) {
   var cx = e.clientX, cy = e.clientY;
   var h = boo.height.baseVal.value;
   var w = boo.width.baseVal.value;
-  if(el.id.indexOf('control')==0) {
+  if (el.id.indexOf('adsrl')==0) {
+    var i = el.id.substr(5);
+    var pt=newPt(1000-cx,200-cy);
+    var pre=adsrPts.slice(0,i)
+    var post=adsrPts.slice(i);
+    adsrPts=pre.concat([pt],post);
+
+    joe = new Joe(adsrPts.map(function (e) { return newPt((1000-e.x)/1000,e.y/100); }));
+    drawAdsr(adsrPts);
+  }
+  else if(el.id.indexOf('control')==0) {
     // remove point
     var ctlid = parseInt(el.id.slice(7));
     if (isNaN(ctlid)) ctlid = pts.length-2;
