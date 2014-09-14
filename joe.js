@@ -1,67 +1,64 @@
 /***
     Joe - a little library all about pitch (intonation + adsr)
+    '...  a couple of quarts of beer, would fix it so the intonation would not offend your ear ...'
 ***/
 
 function Joe(params) {
-if(!params) params=[]
-  //adsr vars
-  var attack = params['attack']||1.05;
-  var decay = params['decay']||0.99;
-  var sustain = params['sustain']||0.95;
-  var release = params['release']||0.01;
-  var attackFor = params['attackFor']||0.05;
-  var decayFor = params['decayFor']||0.05;
-  var sustainFor = params['sustainFor']||0.1;
-  var releaseFor = params['releaseFor']||0.5;
-  var echoStartFor = params['echoStartFor']||2.5;
-  var echoEndFor = params['echoEndFor']||5;
-  var echoStart = params['echoStart']||0.2;
-  var echoEnd = params['echoEnd']||0.1;
- 
-  var sustained = false;//to calculate proper stop time... maybe todo just rely on params?
+if(!params) params=[newPt(0,0.1667),//start from 
+                    newPt(0.05,1.05),//attack
+                    newPt(0.1,0.99),//decay
+                    newPt(0.8,0.95),//sustain
+                    newPt(0.95,0.01),//release
+                    ];
+  var quarts = this.quarts = params;
   
+  Joe.prototype.spill = function() {
+    return quarts;
+  }
+  
+  //scale to fit
+  Joe.prototype.goggles = function(w,h) {
+    return quarts.map(function (e) { return newPt(e.x*w,e.y*h); });
+  }
+  
+  //assumes default params!
   Joe.prototype.ads = function(currentTime,hz,volume,oscillator,gain) {
     gain.gain.cancelScheduledValues(currentTime);
     gain.gain.setValueAtTime(volume/6,currentTime);
     //attack
-    gain.gain.linearRampToValueAtTime(volume * attack,currentTime + attackFor);
-    gain.gain.exponentialRampToValueAtTime(volume * 2,currentTime + attackFor/2);
-    oscillator.frequency.setValueAtTime(hz*attack, currentTime );
-    oscillator.frequency.exponentialRampToValueAtTime(hz, currentTime + attackFor );
+    var a = quarts[1];
+    gain.gain.linearRampToValueAtTime(volume * a.y,currentTime + a.x);
+    //gain.gain.exponentialRampToValueAtTime(volume * 2,currentTime + attackFor/2);
+    
+    //TODO how to represent pitch-shifting in curve drawing? just another colored line???
+    //oscillator.frequency.setValueAtTime(hz*a.y, currentTime );
+    //oscillator.frequency.exponentialRampToValueAtTime(hz, currentTime + a.x );
     //decay
-    gain.gain.linearRampToValueAtTime(volume * decay,currentTime + attackFor + decayFor);
+    var d = quarts[2];
+    gain.gain.linearRampToValueAtTime(volume * d.y,currentTime + d.x);
 
     //sustain
-    gain.gain.linearRampToValueAtTime(volume * sustain, currentTime + attackFor + decayFor + sustainFor);  
+    var s = quarts[3];
+    gain.gain.linearRampToValueAtTime(volume * s.y, currentTime + s.x);  
   }
   
   Joe.prototype.release = function(currentTime,volume,gain,oscillator) {
-    gain.gain.exponentialRampToValueAtTime(volume * release, currentTime + releaseFor + (sustained ? echoStartFor + echoEndFor : 0));
-    setTimeout(function() {oscillator.stop();gain.disconnect();},1000 * ((sustained ? echoStartFor + echoEndFor : 0) + releaseFor));
+    var r = quarts[quarts.length-1];
+    gain.gain.exponentialRampToValueAtTime(volume * r.y, currentTime + r.x);
+    setTimeout(function() {oscillator.stop();gain.disconnect();},1000 * r.x);
   }
   
-  Joe.prototype.adsr = function(currentTime,hz,volume,oscillator,gain) {
+  Joe.prototype.attack = function(currentTime,hz,volume,oscillator,gain) {
     gain.gain.cancelScheduledValues(currentTime);
-    gain.gain.setValueAtTime(volume/6,currentTime);
-    //attack
-    gain.gain.linearRampToValueAtTime(volume * attack,currentTime + attackFor);
-    oscillator.frequency.exponentialRampToValueAtTime(hz + attack/6, currentTime + attackFor);
-    //decay
-    gain.gain.linearRampToValueAtTime(volume * decay,currentTime + attackFor + decayFor);
-    oscillator.frequency.exponentialRampToValueAtTime(hz, currentTime + attackFor + decayFor/2);
-    //sustain
-    gain.gain.linearRampToValueAtTime(volume * sustain, currentTime + attackFor + decayFor + sustainFor);  
+    gain.gain.setValueAtTime(quarts[0].y,currentTime+quarts[0].x);
     
-    this.release(currentTime + attackFor + decayFor + sustainFor,volume,gain,oscillator);
+    //TODO parametrize hz mods
+    //oscillator.frequency.setValueAtTime(hz*quarts[1].y, currentTime );
+    //oscillator.frequency.exponentialRampToValueAtTime(hz, currentTime + quarts[1].x );
+    
+    for (var i = 1; i < quarts.length-1; i++) {
+      var quart = quarts[i];
+      gain.gain.linearRampToValueAtTime(volume * quart.y, currentTime+quart.x);
+    }
   }    
-  
-  //post-release sustain, the sustain that the s in adsr is just implicit
-  Joe.prototype.echo = function(currentTime, volume, gain) {
-    gain.gain.cancelScheduledValues(currentTime);
-    //gain.gain.setValueAtTime(volume,currentTime);
-    //gain.gain.linearRampToValueAtTime(volume , currentTime );
-    sustained = true;
-    gain.gain.exponentialRampToValueAtTime(volume * echoStart, currentTime + echoStartFor);
-    gain.gain.linearRampToValueAtTime(volume * echoEnd, currentTime + echoStartFor + echoEndFor);
-  }
 }

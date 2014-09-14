@@ -94,6 +94,7 @@ function down (e) {
   }
   else if (el.id.indexOf('adsr')==0) {
     adsrid = el.id.substr(4);
+    adsrPts = joe.goggles(1000,100);
     document.addEventListener('mousemove',moveAdsr);
   }
 }
@@ -181,9 +182,6 @@ function move(e) {
 }
 
 function moveAdsr(e) {
-  if(!adsrid) {
-    console.log('bad moveAdsr call!');
-  } 
   var h = boo.height.baseVal.value;
   var w = boo.width.baseVal.value;
   var x = e.clientX;
@@ -192,6 +190,7 @@ function moveAdsr(e) {
   var i  = adsrid;
   //TODO refactor fixed adsr w/h away
   adsrPts[i]=newPt(Math.min(1000,Math.max(0,1000-x)),Math.min(200,Math.max(0,200-y)));
+  (joe.spill())[i]=newPt(adsrPts[i].x/1000,adsrPts[i].y/100);
   drawAdsr(adsrPts);
 }
 

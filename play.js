@@ -16,8 +16,7 @@
     var recur;
     
     var joe = new Joe();
-    //adsrPts maxPt(1000,200)
-    var adsrPts = [newPt(0,0),newPt(100,110), newPt(200,99), newPt(800,95), newPt(1000,0)];
+    var adsrPts = joe.goggles(1000,100);
     var analyser;
     function stream() {
       var ctx = getCtx(); 
@@ -38,7 +37,7 @@
           oscillator.frequency.setValueAtTime(hz,ctx.currentTime);
         }
         if (useAdsr) {
-          joe.ads(ctx.currentTime,hz,volume,oscillator,gain);
+          joe.attack(ctx.currentTime,hz,volume,oscillator,gain);
         }
         else  
           gain.gain.setValueAtTime(volume,ctx.currentTime);
@@ -48,9 +47,6 @@
         if (isNaN(hz)) {
           try {
             if (useAdsr) {
-              if (addSustain) {
-                joe.echo(ctx.currentTime,volume,gain);
-              }
               joe.release(ctx.currentTime,volume,gain,oscillator);
             }
             else {
