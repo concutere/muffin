@@ -18,7 +18,7 @@ if(!params) params=[newPt(0,0.1667),//start from
   
   //scale to fit
   Joe.prototype.goggles = function(w,h) {
-    return quarts.map(function (e) { return newPt(e.x*w,e.y*h); });
+    return quarts.map(function (e) { return newPt(w - e.x*w,e.y*h); });
   }
   
   //assumes default params!

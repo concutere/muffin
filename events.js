@@ -190,7 +190,7 @@ function moveAdsr(e) {
   var i  = adsrid;
   //TODO refactor fixed adsr w/h away
   adsrPts[i]=newPt(Math.min(1000,Math.max(0,1000-x)),Math.min(200,Math.max(0,200-y)));
-  (joe.spill())[i]=newPt(adsrPts[i].x/1000,adsrPts[i].y/100);
+  (joe.spill())[i]=newPt((1000-adsrPts[i].x)/1000,adsrPts[i].y/100);
   drawAdsr(adsrPts);
 }
 
