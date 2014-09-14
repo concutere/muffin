@@ -168,7 +168,7 @@ function move(e) {
     ctl.setAttribute('cx',x);
     ctl.setAttribute('cy',y);
 
-    rePath(boo,pts);
+    //drawWave(boo,pts);
     newWave = reWave(pts,h,w); //h/2,w/2);
   }
 }
@@ -205,7 +205,7 @@ function rept(e) {
     var post=pts.slice(ctlid+1);
     pts=pre.concat(post);
 
-    //rePath(boo,pts);
+    //drawWave(boo,pts);
   }
   else {
     var inid = pts.length-1;
@@ -244,7 +244,7 @@ function rept(e) {
         rel.id = 'control'+(i+1);
     }
     addControl(boo, name,ptd.x, ptd.y);
-    //rePath(boo,pts);
+    //drawWave(boo,pts);
   }
 }
 

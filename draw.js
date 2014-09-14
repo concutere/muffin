@@ -45,18 +45,9 @@ function addPath(svg,pts) {
   p.setAttribute('stroke','slategray');
   p.setAttribute('stroke-width',2);
   p.setAttribute('fill','transparent');
-  p.setAttribute('d',getD(pts));
+  //p.setAttribute('d',getD(pts));
 
   return p;
-}
-
-function rePath(svg,pts) {
-if (!includeSvgPath) return;
-  var currP = document.getElementById('path');
-  if(currP) {
-    //var d = getD(pts);
-    //currP.setAttribute('d', d);
-  }
 }
 
 function clearControls(svg) {
@@ -177,4 +168,34 @@ function aPentatonic(svg,i,w) {
   }
   
   return q;
+}
+
+
+/////////////////////////////
+
+
+function drawWave(pts,h,w) {
+  var svg = document.getElementById('boo');
+  
+  var p = document.getElementById('path');
+  if (p.pathSegList.length != pts.length+1) {
+    p.pathSegList.clear();
+    var last = p.createSVGPathSegMovetoAbs(pts[0].x,pts[0].y);
+    p.pathSegList.appendItem(last);
+    for (var i = 0; i < pts.length; i++) {
+      //todo colinearity test for better line use
+      //if(Math.abs(pts[i].x - last.x) > 1 || Math.abs(pts[i].y - last.y) > 1) {
+        last = pts[i];
+        var seg = p.createSVGPathSegLinetoAbs(last.x,last.y);
+        p.pathSegList.appendItem(seg);
+      //}
+    }
+  }
+  else {
+    for (var i = 0; i < pts.length; i++) {
+      var seg = p.pathSegList.getItem(i+1);
+      if(seg.x != pts[i].x) seg.x=pts[i].x;
+      if (seg.y != pts[i].y) seg.y=pts[i].y;
+    }
+  }
 }

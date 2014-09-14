@@ -93,22 +93,23 @@
 function reWave(pts,h,w) {
   var ctx = getCtx();
   var cpts = curve(pts,bezSize);
-  var svg = document.getElementById('boo');
   var vals=vals||new Float32Array(cpts.length);
   if (includeSvgPath && useDeCasteljauPath) {
     //todo no more stringies!
-    var d = "M " + cpts[0].x + ' ' + cpts[0].y ;
+    /*var d = "M " + cpts[0].x + ' ' + cpts[0].y ;
     d = cpts.reduce(function(p,c,i,a) {
       return p + " L " + c.x + ' ' + c.y;
     },d);
     var pp = document.getElementById('path');
     if (pp)
       pp.setAttribute('d',d);
-  }
+  */}
+  drawWave(cpts,h,w);
+  
   for (var i = 0; i < cpts.length; i++) {
-    if(drawBCs && i % (cpts.length/64) == 0) {
+    /*if(drawBCs && i % (cpts.length/64) == 0) {
       addBC(svg,i,cpts[i].x,cpts[i].y);
-    }
+    }*/
     
     //TODO how can x be used in an intuitive way?
     vals[i]=h-cpts[i].y;
