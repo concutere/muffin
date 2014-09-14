@@ -3,6 +3,17 @@ var boo = document.getElementById('boo');
 var ctlid = undefined;
 var lastPitch = undefined;
 
+function hideEl(el, baseClass) {
+  var g;
+  if (typeof el == 'string')
+    g = document.getElementById('graph');
+  else 
+    g = el;
+  if (g.className.baseVal == 'hide')
+    g.className.baseVal = baseClass ? baseClass : '';
+  else 
+    g.className.baseVal = 'hide';
+}
 function savePathsLocal(paths) {
   if(paths==undefined) paths || samplePaths;
   for (var i =0; i < paths.length; i++) {
@@ -281,11 +292,12 @@ function type(e) {
     wave='custom';
   }
   else if (e.keyCode==71) { // G - toggle sound graph
-    var g = document.getElementById('graph');
+    /*var g = document.getElementById('graph');
     if (g.className.baseVal == 'hide')
       g.className.baseVal = '';
     else 
-      g.className.baseVal = 'hide';
+      g.className.baseVal = 'hide';*/
+      hideEl('graph');
   }
   else if (e.keyCode==77) { //M - toggle mute
     mute = !mute;

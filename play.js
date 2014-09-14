@@ -11,7 +11,7 @@
     } 
 
     var hz,lastHz, minHz=110, initHz=261.625565, cents=0; //middle C
-    var newWave=undefined;
+    var newWave=undefined,currWave=undefined;
     var bendStep=2,lastBend=0;
     var recur;
     
@@ -27,7 +27,6 @@
       gain.connect(analyser);
       analyser.connect(ctx.destination);
       if (!mute) {
-        oscillator.type = wave;
         if (isNaN(hz)) {
           hz=initHz/bendStep;
         }
@@ -60,10 +59,16 @@
           return;
         }
         else {
-          if(newWave && wave=='custom') {
-            oscillator.setPeriodicWave(newWave);
-            //newWave = undefined;
+          if(wave=='custom') {
+            if (newWave) {
+              currWave = newWave;
+              newWave = undefined;
+            }
+            oscillator.setPeriodicWave(currWave);
           }
+          else
+            oscillator.type = wave;
+
           oscillator.frequency.value = hz;
           oscillator.detune.value = cents;
          
@@ -91,7 +96,7 @@ function reWave(pts,h,w) {
   var svg = document.getElementById('boo');
   var vals=vals||new Float32Array(cpts.length);
   if (includeSvgPath && useDeCasteljauPath) {
-    //todo move to beginning?
+    //todo no more stringies!
     var d = "M " + cpts[0].x + ' ' + cpts[0].y ;
     d = cpts.reduce(function(p,c,i,a) {
       return p + " L " + c.x + ' ' + c.y;
@@ -104,7 +109,8 @@ function reWave(pts,h,w) {
     if(drawBCs && i % (cpts.length/64) == 0) {
       addBC(svg,i,cpts[i].x,cpts[i].y);
     }
-    // using x can be good for "interesting" control options, less so for making sense of the math
+    
+    //TODO how can x be used in an intuitive way?
     vals[i]=h-cpts[i].y;
   }
   
