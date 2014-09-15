@@ -11,18 +11,33 @@
     var chan = e.data[0] & 0xf;
     var key = e.data[1];
     var hit = e.data[2];
-    console.log('{ key: ' + key + ', hit: ' + hit + ' }');
     
     if (chan == 9)
       return; 
       
     if(cmd==8 || (cmd==9 && hit==0)) {
       //stop playing note
-      hz=undefined;
+      var i = tet(key);
+      if (!playing[i]) 
+        return;
+      playing[i]['stop']=true;
+      
+      var tmp = [];
+      for (o in playing) {
+        if (o!=i && playing[o]!=undefined) {
+          tmp[o]=playing[o];
+        }
+      }
+      
+      playing = tmp;
     }
     else if (cmd == 9) {
       //play note
-      play(tet(key),hit/100.0);
+      var i = tet(key);
+      if(playing[i] && playing[i]['stop']!==true)
+        playing[i]['stop']=true;
+      //else
+      playing[i] = play(i,hit/100.0);
     }
     
   }

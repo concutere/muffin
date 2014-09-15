@@ -10,57 +10,58 @@
       return Math.pow(2,(max-val) / (max/octaves));
     } 
     
+    //TODO calc lookup table on init
     function tet(key) {
       var refHz = initHz;
       var refKey = 60;
         
-      
       return refHz * Math.pow(2, (key-refKey)/12);
     }
 
-    var hz,lastHz, minHz=110, initHz=261.625565, cents=0; //middle C
+    var playing = [];
+    
+    var initHz=261.625565; //middle C
     var newWave=undefined,currWave=undefined;
     var bendStep=2,lastBend=0;
-    var recur;
     
     var joe = new Joe();
     var adsrPts = joe.goggles(1000,100);
     var analyser;
-    function play(playHz,playVol) {
+    function play(hz,vol) {
+      var o = new Object();
+      o['stop']=false;
       var ctx = getCtx(); 
       var gain = ctx.createGain();
       var oscillator = ctx.createOscillator();
       analyser = analyser || ctx.createAnalyser();
-
+      
       oscillator.connect(gain);
       gain.connect(analyser);
       analyser.connect(ctx.destination);
       if (!mute) {
-        if(isNaN(playVol))
-          playVol = volume;
-        if(!isNaN(playHz))
-          hz=playHz;
-        else if (isNaN(hz)) {
+        if(isNaN(vol))
+          vol = volume;
+        if (isNaN(hz)) {
           hz=initHz/bendStep;
         }
         
         if(hz!=oscillator.frequency.value) {
           oscillator.frequency.cancelScheduledValues(ctx.currentTime);
-          oscillator.frequency.value=hz;
+          oscillator.frequency.value=o['hz']=hz;
           oscillator.frequency.setValueAtTime(hz,ctx.currentTime);
         }
         if (useAdsr) {
-          joe.attack(ctx.currentTime,hz,playVol,oscillator,gain);
+          joe.attack(ctx.currentTime,hz,vol,oscillator,gain);
         }
         else  
-          gain.gain.setValueAtTime(playVol,ctx.currentTime);
+          gain.gain.setValueAtTime(vol,ctx.currentTime);
 
       }
       var recur = recur || function recur() {
-        if (isNaN(hz)) {
+        if (isNaN(hz) || o['stop']===true) {
           try {
             if (useAdsr) {
-              joe.release(ctx.currentTime,playVol,gain,oscillator);
+              joe.release(ctx.currentTime,vol,gain,oscillator);
             }
             else {
               oscillator.stop(0);
@@ -81,7 +82,7 @@
             oscillator.type = wave;
 
           oscillator.frequency.value = hz;
-          oscillator.detune.value = cents;
+          //oscillator.detune.value = cents;
          
           //TODO move to draw
           //drawGraph(analyser);
@@ -99,6 +100,8 @@
       if (!mute) 
         oscillator.start();
       requestAnimationFrame(recur);
+      
+      return o; //set o['stop']=true to stop playing
     }
     
 

@@ -1,7 +1,6 @@
 //event handlers
 var boo = document.getElementById('boo');
 var ctlid = undefined;
-var lastPitch = undefined;
 
 function hideEl(el, baseClass) {
   var g;
@@ -104,28 +103,26 @@ function down (e) {
 }
 
 function up(e) {
-  lastHz=hz;
-  hz=undefined;
   ctlid = undefined;
   lastPitch=undefined;
   if(adsrid)
     document.removeEventListener('mousemove',moveAdsr);
   else if (drag)
     document.removeEventListener('mousemove',move);
-  else 
+  /*else 
     document.removeEventListener('mousemove',movePitch);
-  drag=false;
+  */drag=false;
   adsrid = undefined;
   }
 
 function handlePentatonic(i) {
   //if (isNaN(hz))
   i=parseInt(i);
-  hz=initHz/2 * (i+4)/5; //pentatonic harmonic series, but start lower octave or overtones from the curves could get painful
-  play();
+  var hz=initHz/2 * (i+4)/5; //pentatonic harmonic series, but start lower octave or overtones from the curves could get painful
+  play(hz);
 }
 
-function movePitch(e) {
+/*function movePitch(e) {
   if (isNaN(hz)) {
     play();
   }
@@ -157,15 +154,16 @@ function movePitch(e) {
   var el = document.getElementById('pitch');
   el.setAttribute('x', e.clientX-25);
 }
+*/
 
 function move(e) {
   if (ctlid == undefined || !drag)
     return;
     
-  if (isNaN(hz)) {
-    hz=lastHz;
-    play();
-  }
+  /*if (isNaN(hz)) {
+    //hz=lastHz;
+    play(lastHz);
+  }*/
   var el = e.srcElement || e.target;
   var h = boo.height.baseVal.value;
   var w = boo.width.baseVal.value;
