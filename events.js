@@ -39,6 +39,7 @@ function clearPathsLocal() {
   window.localStorage.removeItem('samplePaths');
 }
 
+var m=null;
 var pts=[];
 function init(e) {
   var controlpts=8;
@@ -68,9 +69,12 @@ function init(e) {
   drawControls(svg,pts);
   
   //pentatonic scale 'keys'
-  for (var i = 1; i <=6; i++) {
+  /*for (var i = 1; i <=6; i++) {
     var e=aPentatonic(svg,i,w);
   }
+  */
+  
+  navigator.requestMIDIAccess().then(gotMIDI,function (e) { console.log('error!\n'+e);});
   
   newWave = reWave(pts,h,w);
 }
@@ -118,12 +122,12 @@ function handlePentatonic(i) {
   //if (isNaN(hz))
   i=parseInt(i);
   hz=initHz/2 * (i+4)/5; //pentatonic harmonic series, but start lower octave or overtones from the curves could get painful
-  stream();
+  play();
 }
 
 function movePitch(e) {
   if (isNaN(hz)) {
-    stream();
+    play();
   }
   lastPitch = e.clientX;
   var centWt = 1;
@@ -160,7 +164,7 @@ function move(e) {
     
   if (isNaN(hz)) {
     hz=lastHz;
-    stream();
+    play();
   }
   var el = e.srcElement || e.target;
   var h = boo.height.baseVal.value;
@@ -189,7 +193,7 @@ function moveAdsr(e) {
   var el = e.srcElement || e.target;
   var i  = adsrid;
   //TODO refactor fixed adsr w/h away
-  adsrPts[i]=newPt(Math.min(1000,Math.max(0,1000-x)),Math.min(200,Math.max(0,200-y)));
+  adsrPts[i]=newPt(Math.min(1000,Math.max(1,1000-x)),Math.min(200,Math.max(1,200-y)));
   (joe.spill())[i]=newPt((1000-adsrPts[i].x)/1000,adsrPts[i].y/100);
   drawAdsr(adsrPts);
 }

@@ -9,6 +9,14 @@
     function scaleHz(val, max, octaves) {
       return Math.pow(2,(max-val) / (max/octaves));
     } 
+    
+    function tet(key) {
+      var refHz = initHz;
+      var refKey = 60;
+        
+      
+      return refHz * Math.pow(2, (key-refKey)/12);
+    }
 
     var hz,lastHz, minHz=110, initHz=261.625565, cents=0; //middle C
     var newWave=undefined,currWave=undefined;
@@ -18,7 +26,7 @@
     var joe = new Joe();
     var adsrPts = joe.goggles(1000,100);
     var analyser;
-    function stream() {
+    function play(playHz,playVol) {
       var ctx = getCtx(); 
       var gain = ctx.createGain();
       var oscillator = ctx.createOscillator();
@@ -28,26 +36,31 @@
       gain.connect(analyser);
       analyser.connect(ctx.destination);
       if (!mute) {
-        if (isNaN(hz)) {
+        if(isNaN(playVol))
+          playVol = volume;
+        if(!isNaN(playHz))
+          hz=playHz;
+        else if (isNaN(hz)) {
           hz=initHz/bendStep;
         }
+        
         if(hz!=oscillator.frequency.value) {
           oscillator.frequency.cancelScheduledValues(ctx.currentTime);
           oscillator.frequency.value=hz;
           oscillator.frequency.setValueAtTime(hz,ctx.currentTime);
         }
         if (useAdsr) {
-          joe.attack(ctx.currentTime,hz,volume,oscillator,gain);
+          joe.attack(ctx.currentTime,hz,playVol,oscillator,gain);
         }
         else  
-          gain.gain.setValueAtTime(volume,ctx.currentTime);
+          gain.gain.setValueAtTime(playVol,ctx.currentTime);
 
       }
       var recur = recur || function recur() {
         if (isNaN(hz)) {
           try {
             if (useAdsr) {
-              joe.release(ctx.currentTime,volume,gain,oscillator);
+              joe.release(ctx.currentTime,playVol,gain,oscillator);
             }
             else {
               oscillator.stop(0);
