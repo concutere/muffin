@@ -44,8 +44,13 @@ if(!params) params=[newPt(0,0.1667),//start from
   
   Joe.prototype.release = function(currentTime,volume,gain,oscillator) {
     var r = quarts[quarts.length-1];
-    gain.gain.exponentialRampToValueAtTime(volume * r.y, currentTime + 1000 * r.x);
-    setTimeout(function() {oscillator.stop();gain.disconnect();},1000 * r.x);
+    gain.gain.exponentialRampToValueAtTime(volume * r.y, currentTime +  r.x);
+    oscillator.stop(currentTime +  r.x);
+    setTimeout(stopIt,1000 * r.x);
+    function stopIt() {
+      oscillator.stop();
+      gain.disconnect();
+    }
   }
   
   Joe.prototype.attack = function(currentTime,hz,volume,oscillator,gain) {
