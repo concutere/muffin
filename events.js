@@ -73,28 +73,38 @@ function init(e) {
   }
   */
   
-  navigator.requestMIDIAccess().then(gotMIDI,function (e) { console.log('error!\n'+e);});
-  
   newWave = reWave(pts,h,w);
+  if (canMidi())
+    navigator.requestMIDIAccess().then(gotMIDI,function (e) { console.log('error!\n'+e);});
+
+  
+
+}
+
+function canMidi() {
+  return (navigator.requestMIDIAccess) instanceof Function;
 }
 
 var adsrid=undefined;
 var drag=false;
+var deftone=undefined;
 function down (e) {
   var el = e.srcElement || e.target;
   if(el.id.indexOf('control')==0) {
     ctlid = parseInt(el.id.substr(7));
     drag=true;
     document.addEventListener('mousemove',move);
+    if (!canMidi())
+      deftone = play(initHz,1);
   }
-  else if(el.id=='pitch') {
+  /*else if(el.id=='pitch') {
     lastPitch = 0;
     document.addEventListener('mousemove',movePitch);
   }
   else if(el.id.indexOf('pentatonic')==0) {
     var i=el.id.substr(10);
     handlePentatonic(i);
-  }
+  }*/
   else if (el.id.indexOf('adsr')==0) {
     adsrid = el.id.substr(4);
     adsrPts = joe.goggles(1000,100);
@@ -105,6 +115,10 @@ function down (e) {
 function up(e) {
   ctlid = undefined;
   lastPitch=undefined;
+  if(deftone) {
+    deftone['stop']=true;
+    deftone=undefined;
+  }
   if(adsrid)
     document.removeEventListener('mousemove',moveAdsr);
   else if (drag)
