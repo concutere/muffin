@@ -186,9 +186,10 @@ function drawWave(pts) {
       //todo colinearity test for better line use
       //if(Math.abs(pts[i].x - last.x) > 1 || Math.abs(pts[i].y - last.y) > 1) {
         last = pts[i];
+        if(last) {
         var seg = p.createSVGPathSegLinetoAbs(last.x,last.y);
         p.pathSegList.appendItem(seg);
-      //}
+      }
     }
   }
   else {
@@ -242,8 +243,8 @@ var w = 1000, h = 200;
       var l = document.getElementById('adsrl'+i) || document.createElementNS(svgNS,'line');
       if (!l.parentElement) {
         l.id = 'adsrl'+i;
-        l.setAttribute('stroke','lightsteelblue');
-        l.setAttribute('stroke-width','2');
+        l.setAttribute('stroke','black');//'lightsteelblue');
+        l.setAttribute('stroke-width','0.5');
         g.appendChild(l);
       }
       l.setAttribute('x1',w-pts[i-1].x);

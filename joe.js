@@ -4,12 +4,19 @@
 ***/
 
 function Joe(params) {
-if(!params) params=[newPt(0,0.1667),//start from 
-                    newPt(0.05,1.05),//attack
-                    newPt(0.1,0.99),//decay
-                    newPt(0.8,0.95),//sustain
-                    newPt(0.85,0.01),//release
+if(!params) params=/*[newPt(0,0.1667),//start from 
+                    newPt(0.05,0.95),//attack
+                    newPt(0.1,0.80),//decay
+                    newPt(0.25,0.90),//sustain
+                    newPt(0.99,0.01),//release
+                    ];*/
+                   [newPt(0,0.1667),//start from 
+                    newPt(0.01,0.86),//attack
+                    newPt(0.026,1.03),//decay
+                    newPt(0.038,0.85),//sustain
+                    newPt(0.545,0.05),//release
                     ];
+                   
   var quarts = this.quarts = params;
   
   Joe.prototype.spill = function() {
@@ -44,8 +51,8 @@ if(!params) params=[newPt(0,0.1667),//start from
   
   Joe.prototype.release = function(currentTime,volume,gain,oscillator) {
     var r = quarts[quarts.length-1];
-    gain.gain.exponentialRampToValueAtTime(volume * r.y, currentTime +  r.x);
-    oscillator.stop(currentTime +  r.x);
+    gain.gain.linearRampToValueAtTime(volume * r.y, currentTime + r.x);
+    oscillator.stop(currentTime + r.x);
     setTimeout(stopIt,1000 * r.x);
     function stopIt() {
       oscillator.stop();
@@ -65,5 +72,14 @@ if(!params) params=[newPt(0,0.1667),//start from
       var quart = quarts[i];
       gain.gain.linearRampToValueAtTime(volume * quart.y, currentTime+quart.x);
     }
-  }    
+  }   
+
+  Joe.prototype.turnitdown = function(compressor) {
+    compressor.threshold.value = -50;
+    compressor.knee.value = 40;
+    compressor.ratio.value = 12;
+    compressor.reduction.value = -20;
+    compressor.attack.value = quarts[1].x;
+    compressor.release.value = quarts[quarts.length-1].x;
+  }
 }

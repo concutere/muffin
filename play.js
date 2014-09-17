@@ -34,9 +34,15 @@
       var gain = ctx.createGain();
       var oscillator = ctx.createOscillator();
       analyser = analyser || ctx.createAnalyser();
+
+      //TODO parametrize
+      var compressor = ctx.createDynamicsCompressor();
+      joe.turnitdown(compressor);
+
       
       oscillator.connect(gain);
-      gain.connect(analyser);
+      gain.connect( compressor);//analyser);
+      compressor.connect(analyser);
       analyser.connect(ctx.destination);
       if (!mute) {
         if(isNaN(vol))
@@ -60,11 +66,12 @@
       var recur = recur || function recur() {
         if (isNaN(hz) || o['stop']===true) {
           try {
-            if (useAdsr) {
+              if (useAdsr) {
               joe.release(ctx.currentTime,vol,gain,oscillator);
             }
             else {
               oscillator.stop(0);
+
               gain.disconnect();
             }
           } catch(e) { }
@@ -97,8 +104,9 @@
         }
       };
 
-      if (!mute) 
+      if (!mute) {
         oscillator.start();
+      }
       requestAnimationFrame(recur);
       
       return o; //set o['stop']=true to stop playing
@@ -110,7 +118,7 @@
 
 function reWave(pts,h,w) {
   var ctx = getCtx();
-  var cpts = curve(pts,bezSize);
+  var cpts = curve(pts,bezSize).reverse();
   var vals=vals||new Float32Array(cpts.length);
 
   drawWave(cpts,h,w);
@@ -120,7 +128,7 @@ function reWave(pts,h,w) {
     // loop detection for clipping?
     // cusps?
     // pt diff?
-    vals[i]=h-cpts[i].y;
+    vals[/*(cpts.length-1)-*/i]=h-cpts[i].y;
   }
   
   var fft = new FFT(bezSize);

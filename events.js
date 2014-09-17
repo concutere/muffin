@@ -174,10 +174,13 @@ function move(e) {
     var i = ctlid;
     var ctl = document.getElementById('control'+ctlid);
     var pt= pts[ctlid];
-    pt.x = x;
+    
     pt.y = y;
-    ctl.setAttribute('cx',x);
     ctl.setAttribute('cy',y);
+    if (!fixX) {
+      pt.x = x;
+      ctl.setAttribute('cx',x);
+    }
 
     newWave = reWave(pts,h,w);
   }
@@ -191,7 +194,7 @@ function moveAdsr(e) {
   var el = e.srcElement || e.target;
   var i  = adsrid;
   //TODO refactor fixed adsr w/h away
-  adsrPts[i]=newPt(Math.min(1000,Math.max(1,1000-x)),Math.min(200,Math.max(1,200-y)));
+  adsrPts[i]=newPt(Math.min(1000,Math.max(0,1000-x)),Math.min(200,Math.max(0,200-y)));
   (joe.spill())[i]=newPt((1000-adsrPts[i].x)/1000,adsrPts[i].y/100);
   drawAdsr(adsrPts);
 }
@@ -239,7 +242,11 @@ function rept(e) {
     var pre=pts.slice(0,ctlid)
     var post=pts.slice(ctlid+1);
     pts=pre.concat(post);
-
+    
+    if (fixX) {
+      fixXs();
+      drawControls(boo);
+    }
   }
   else {
     var inid = pts.length-1;
@@ -258,7 +265,7 @@ function rept(e) {
         inid=Math.max(1,
               Math.min(pts.length-1,
                 Math.round((i+scale/2)/scale)));
-        ptd={x: cx, y: cy, toString: function() { return this.x + ' ' + this.y;}};
+        ptd={x: (fixX ? i * w/(pts.length): cx), y: cy, toString: function() { return this.x + ' ' + this.y;}};
       }
     }
     if (ptd==undefined) {
@@ -270,6 +277,7 @@ function rept(e) {
     var post = pts.slice(inid);
     pre.push(ptd);
     pts=pre.concat(post);
+    
     var name ='control'+inid;
    //fix control circle names for id > ctlid
     for (var i = pts.length-2;inid<=i;i--) {
@@ -277,8 +285,20 @@ function rept(e) {
       if (rel)
         rel.id = 'control'+(i+1);
     }
-    addControl(boo, name,ptd.x, ptd.y);
-    //drawWave(boo,pts);
+    if (fixX) {
+      fixXs(boo);
+      drawControls(boo);
+    }
+    else
+      addControl(boo, name,ptd.x, ptd.y);
+  }
+  reWave(pts,h,w);
+  
+  function fixXs() {
+    var seglen = w / (pts.length-1);
+    for (var i = 0;i < pts.length; i++) {
+      pts[i].x = seglen * i;
+    }
   }
 }
 
@@ -311,6 +331,9 @@ function type(e) {
   else if (e.keyCode==81) { // Q - square
     wave='square';
   }*/
+  else if(e.keyCode==88) { // toggle axis freedom of control points
+    fixX = !fixX;
+  }
   else if (e.keyCode==65) { // A - toggle ADSR (basic linear)
     hideEl('adsr');
     drawAdsr(adsrPts);
