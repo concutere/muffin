@@ -61,14 +61,11 @@ if(!params) params=/*[newPt(0,0.1667),//start from
   }
   
   Joe.prototype.attack = function(currentTime,hz,volume,oscillator,gain) {
-    gain.gain.cancelScheduledValues(currentTime);
-    gain.gain.setValueAtTime(quarts[0].y,currentTime+quarts[0].x);
-    
     //TODO parametrize hz mods
     //oscillator.frequency.setValueAtTime(hz*quarts[1].y, currentTime );
     //oscillator.frequency.exponentialRampToValueAtTime(hz, currentTime + quarts[1].x );
     
-    for (var i = 1; i < quarts.length-1; i++) {
+    for (var i = 0; i < quarts.length-1; i++) {
       var quart = quarts[i];
       gain.gain.linearRampToValueAtTime(volume * quart.y, currentTime+quart.x);
     }
