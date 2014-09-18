@@ -232,6 +232,7 @@ var w = 1000, h = 200;
   if(!m.parentElement) {
     m.id='adsrm';
     m.setAttribute('stroke','lightgray');
+    m.setAttribute('stroke-width',1.5);
     m.setAttribute('x1',0);
     m.setAttribute('x2',w);
     m.setAttribute('y1',h/2);
