@@ -23,14 +23,18 @@
     var initHz=261.625565; //middle C
     var newWave=undefined,currWave=undefined;
     var bendStep=2,lastBend=0;
+    var analyser;
     
     var joe = new Joe();
     var adsrPts = joe.goggles(1000,100);
-    var analyser;
     function play(hz,vol) {
+      var ctx = getCtx(); 
       var o = new Object();
       o['stop']=false;
-      var ctx = getCtx(); 
+      o['time']=ctx.currentTime;
+      o['hz']=hz;
+      o['vol']=vol;
+
       var gain = ctx.createGain();
       var oscillator = ctx.createOscillator();
       analyser = analyser || ctx.createAnalyser();
@@ -66,7 +70,7 @@
       var recur = recur || function recur() {
         if (isNaN(hz) || o['stop']===true) {
           try {
-              if (useAdsr) {
+            if (useAdsr) {
               joe.release(ctx.currentTime,vol,gain,oscillator);
             }
             else {
@@ -135,3 +139,7 @@ function reWave(pts,h,w) {
   var trans = fft.forward(vals);
   return ctx.createPeriodicWave(trans.real,trans.imag);
 }    
+
+
+////////////////////////////////////////////////
+
