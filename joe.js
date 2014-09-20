@@ -10,7 +10,7 @@ if(!params) params=/*[newPt(0,0.1667),//start from
                     newPt(0.25,0.90),//sustain
                     newPt(0.99,0.01),//release
                     ];*/
-                   [newPt(0,0.1667),//start from 
+                   [newPt(0,0.0/*1667*/),//start from 
                     newPt(0.01,0.86),//attack
                     newPt(0.026,1.03),//decay
                     newPt(0.038,0.85),//sustain
@@ -37,7 +37,7 @@ if(!params) params=/*[newPt(0,0.1667),//start from
     gain.gain.linearRampToValueAtTime(volume * a.y,currentTime + a.x);
     //gain.gain.exponentialRampToValueAtTime(volume * 2,currentTime + attackFor/2);
     
-    //TODO how to represent pitch-shifting in curve drawing? just another colored line???
+    //TODO how to represent pitch-shifting in curve drawing? just another colored line??? add peicemeal by dblclicking the ctrls?
     //oscillator.frequency.setValueAtTime(hz*a.y, currentTime );
     //oscillator.frequency.exponentialRampToValueAtTime(hz, currentTime + a.x );
     //decay
@@ -61,22 +61,25 @@ if(!params) params=/*[newPt(0,0.1667),//start from
   }
   
   Joe.prototype.attack = function(currentTime,hz,volume,oscillator,gain) {
+    gain.gain.cancelScheduledValues(currentTime);
+    gain.gain.setValueAtTime(volume*quarts[0].y,currentTime);
+    
     //TODO parametrize hz mods
     //oscillator.frequency.setValueAtTime(hz*quarts[1].y, currentTime );
     //oscillator.frequency.exponentialRampToValueAtTime(hz, currentTime + quarts[1].x );
     
-    for (var i = 0; i < quarts.length-1; i++) {
+    for (var i = 1; i < quarts.length-1; i++) {
       var quart = quarts[i];
       gain.gain.linearRampToValueAtTime(volume * quart.y, currentTime+quart.x);
     }
   }   
 
   Joe.prototype.turnitdown = function(compressor) {
-    compressor.threshold.value = -50;
-    compressor.knee.value = 40;
-    compressor.ratio.value = 12;
-    compressor.reduction.value = -20;
-    compressor.attack.value = quarts[1].x;
-    compressor.release.value = quarts[quarts.length-1].x;
+    compressor.threshold.value = -40;
+    compressor.knee.value = 10;
+    compressor.ratio.value = 4;
+    compressor.reduction.value = 10;
+    compressor.attack.value = 0.0001;//quarts[1].y;
+    compressor.release.value = 0.25;//quarts[quarts.length-1].y;
   }
 }
