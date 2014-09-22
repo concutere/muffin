@@ -24,6 +24,7 @@
     var newWave=undefined,currWave=undefined;
     var bendStep=2,lastBend=0;
     var analyser;
+    var compressor;
     
     var joe = new Joe();
     var adsrPts = joe.goggles(1000,100);
@@ -40,11 +41,11 @@
       analyser = analyser || ctx.createAnalyser();
 
       //TODO parametrize
-      var compressor = ctx.createDynamicsCompressor();
+      compressor = compressor || ctx.createDynamicsCompressor();
       joe.turnitdown(compressor);
-
-      
-      oscillator.connect(gain);
+      lowpass=joe.lowpass();
+      oscillator.connect(lowpass); //*/gain);
+      lowpass.connect(gain);
       gain.connect( compressor);//analyser);
       compressor.connect(analyser);
       analyser.connect(ctx.destination);
@@ -143,3 +144,9 @@ function reWave(pts,h,w) {
 
 ////////////////////////////////////////////////
 
+
+function cancelAll() {
+  for(p in playing) {
+    p['stop']=true;
+  }
+}

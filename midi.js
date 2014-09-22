@@ -41,9 +41,3 @@
     }
     
   }
-  
-  function cancelAll() {
-    for(p in playing) {
-      p['stop']=true;
-    }
-  }

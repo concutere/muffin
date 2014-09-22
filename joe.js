@@ -75,11 +75,39 @@ if(!params) params=/*[newPt(0,0.1667),//start from
   }   
 
   Joe.prototype.turnitdown = function(compressor) {
+    var compressor  = compressor || getCtx().createDynamicsCompressor();
     compressor.threshold.value = -40;
-    compressor.knee.value = 10;
-    compressor.ratio.value = 4;
-    compressor.reduction.value = 10;
-    compressor.attack.value = 0.0001;//quarts[1].y;
-    compressor.release.value = 0.25;//quarts[quarts.length-1].y;
+    compressor.knee.value = 50;
+    compressor.ratio.value = 8;
+    compressor.reduction.value = -8;
+    compressor.attack.value = 0;
+    compressor.release.value = (quarts[quarts.length-1].x - quarts[quarts.length-2].x) / (quarts[quarts.length-1].x - quarts[0].x);
+  }
+  
+  Joe.prototype.allpass = function() {
+    var allpass = getCtx().createBiquadFilter();
+    allpass.type = 'allpass';
+    allpass.frequency.value=350;
+    allpass.Q.value=25;
+    allpass.detune=5-Math.random() * 10;
+    return allpass;
+  }
+  
+  Joe.prototype.lowpass = function() {
+    var lowpass = getCtx().createBiquadFilter();
+    lowpass.type = 'lowpass';
+    lowpass.frequency.value=1200;
+    lowpass.Q.value=5;
+    lowpass.detune=5-Math.random() * 10;
+    return lowpass;  
+  }
+  
+    Joe.prototype.bandpass = function() {
+    var bandpass = getCtx().createBiquadFilter();
+    bandpass.type = 'allpass';
+    bandpass.frequency.value=110;
+    bandpass.gain.value=50;
+    //bandpass.detune=5-Math.random() * 10;
+    return bandpass;  
   }
 }

@@ -331,7 +331,7 @@ function type(e) {
       el.className='roll' + k;
   }
   else if(e.keyCode==27) { //escape
-    newWave = undefined;
+    cancelAll();
   }
   /*else if(e.keyCode==83) { // S - sine 
     wave='sine';
@@ -375,7 +375,7 @@ function type(e) {
     if (e.shiftKey) {
       slide = k;
     }
-    else if (e.altKey) { //record sound
+    else if (e.altKey) { //record sound wave
       var pp = [];
       for (var i = 0; i < pts.length; i++) {
         pp.push(pts[i].x);
