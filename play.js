@@ -23,9 +23,10 @@
     var initHz=261.625565; //middle C
     var newWave=undefined,currWave=undefined;
     var bendStep=2,lastBend=0;
-    var analyser;
+    var analyser, ma;
     var compressor;
     
+    var mic = undefined;
     var joe = new Joe();
     var adsrPts = joe.goggles(1000,100);
     function play(hz,vol) {
@@ -43,9 +44,9 @@
       //TODO parametrize
       compressor = compressor || ctx.createDynamicsCompressor();
       joe.turnitdown(compressor);
-      lowpass=joe.lowpass();
-      oscillator.connect(lowpass); //*/gain);
-      lowpass.connect(gain);
+      //lowpass=joe.lowpass();
+      oscillator.connect(/*lowpass); //*/gain);
+      //lowpass.connect(gain);
       gain.connect( compressor);//analyser);
       compressor.connect(analyser);
       analyser.connect(ctx.destination);
@@ -149,4 +150,32 @@ function cancelAll() {
   for(p in playing) {
     p['stop']=true;
   }
+}
+
+
+////////////////////////////////////////////////
+
+
+function initRecord() {
+  var ctx = getCtx();
+  ma = ma || ctx.createAnalyser();
+  mic = new Mic(ma);
+  mic.record(loopRecord);
+}
+
+function loopRecord() {
+  if (recording) {
+    var freqs = new Uint8Array(ma.frequencyBinCount);
+    ma.getByteFrequencyData(freqs);
+    graphByteFreqs(freqs,'blue','micgraph');
+    var times = new Uint8Array(ma.frequencyBinCount);
+    ma.getByteTimeDomainData(times);
+    graphByteTimes(times,'red','micgraph');
+    requestAnimationFrame(loopRecord);
+  }
+}
+
+function stopRecord() {
+  mic.dc();
+  mic=undefined;
 }

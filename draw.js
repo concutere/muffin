@@ -75,9 +75,9 @@ function drawControls(svg) {
   }
 }
 
-function graphByteFreqs(freqs) {
+function graphByteFreqs(freqs,clr,parent) {
   if (!drawFreqs) return;
-  var g = document.getElementById('graph');
+  var g = document.getElementById(parent ? parent : 'graph');
   if(g.className.baseVal=='hide') return;
   
   var svg = document.getElementById('boo');
@@ -98,14 +98,14 @@ function graphByteFreqs(freqs) {
     el.setAttribute('width', stepw);
     el.setAttribute('height',steph);
     if (!el.parentElement) {
-      el.setAttribute('fill','chartreuse');
+      el.setAttribute('fill',clr ? clr : 'chartreuse');
       g.appendChild(el);
     }
   }
 }
 
-function graphByteTimes(times) {
-  var g = document.getElementById('graph');
+function graphByteTimes(times,clr, parent) {
+  var g = document.getElementById(parent ? parent : 'graph');
   if(g.className.baseVal=='hide') return;
 
   var svg = document.getElementById('boo');
@@ -126,7 +126,7 @@ function graphByteTimes(times) {
     el.setAttribute('width', stepw*2);
     el.setAttribute('height',stepw*2);
     if (!el.parentElement) {
-      el.setAttribute('fill','#f0f');
+      el.setAttribute('fill',clr ? clr : '#f0f');
       g.appendChild(el);
     }
   }

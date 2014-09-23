@@ -318,6 +318,8 @@ function rept(e) {
 
 //TODO move slide related stuff to separate file
 var slide = 0;
+var recording = false;
+
 function type(e) {
   //key handler
   var k =e.keyIdentifier;
@@ -345,6 +347,16 @@ function type(e) {
   else if (e.keyCode==81) { // Q - square
     wave='square';
   }*/
+  else if(e.keyCode==82) { // R - record mic
+    if(recording) {
+      //stop recording
+      stopRecord();
+    }
+    else {
+      initRecord();
+    }
+    recording = !recording;
+  }
   else if(e.keyCode==88) { // toggle axis freedom of control points
     fixX = !fixX;
   }
