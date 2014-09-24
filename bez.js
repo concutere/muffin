@@ -234,12 +234,38 @@ function smoother(pts) {
   
   var avgd = totd / diffs.length;
   for (var i = 0; i < diffs.length; i++) {
-    if(diffs[i] > avgd || i==mini || i==maxi || i <= 1 || i >= pts.length - 2) {
+    if(diffs[i] >= avgd || i==mini || i==maxi || i <= 1 || i >= pts.length - 2) {
       var pt=pts[i];
       npts.push(newPt(pt.x,pt.y));
     }
   }
   npts.push(newPt(pts[pts.length-1].x,pts[pts.length-1].y));
+  
+  return npts;
+}
+
+function insine(pts,w,h) {
+  for (var i = 1; i < pts.length; i++) {
+    var last = pts[i-1];
+    var pt = pts[i];
+    var diff = pt.y - last.y; 
+    var mp = midPt(pt,last);
+    var my = last.y + diff / 2;
+    //mids.push(mp);
+
+    //diffs.push(diff);
+    //var xd = (pt.x - last.x) / 3;
+    
+    var a = newPt(last.x +2, my - diff/20);
+    var b = newPt(last.x + 4, my + diff/20);
+
+    npts.push(newPt(last.x+1, my));
+    npts.push(a);
+    npts.push(newPt(last.x+3,my));
+    npts.push(b);
+    npts.push(newPt(last.x+5,my));
+    npts.push(newPt(pt.x,pt.y));
+  }
   
   return npts;
 }

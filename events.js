@@ -361,8 +361,8 @@ function type(e) {
     if(e.shiftKey) {
       pts=rougher(pts);
     }
-    else if (e.AltKey){
-      pts=straighter(pts);
+    else if (e.altKey){
+      pts=insine(pts);
     }
     else {
       pts=smoother(pts);

@@ -122,13 +122,18 @@
 ///////////////////////////////////
 
 
-function reWave(pts,h,w) {
-  var ctx = getCtx();
+function reWave(pts,h) {
   var cpts = curve(pts,bezSize).reverse();
-  var vals=vals||new Float32Array(cpts.length);
 
   drawWave(cpts);
   
+  return ptsToWave(cpts,h);
+}
+
+//TODO remove need for h by reorienting axes in events
+function ptsToWave(cpts,h) {
+  var ctx = getCtx();
+  var vals=vals||new Float32Array(cpts.length);
   for (var i = 0; i < cpts.length; i++) {
     //TODO how can x be used in an intuitive way?
     // loop detection for clipping?
@@ -137,11 +142,50 @@ function reWave(pts,h,w) {
     vals[/*(cpts.length-1)-*/i]=h-cpts[i].y;
   }
   
-  var fft = new FFT(bezSize);
+  var fft = new FFT(vals.length);
   var trans = fft.forward(vals);
   return ctx.createPeriodicWave(trans.real,trans.imag);
 }    
 
+
+function curvesRange(pts,h) {
+  var smooth = smoother(pts);
+  var rough = rougher(pts);
+  var spts = curve(smooth,bezSize).reverse();
+  var rpts = curve(rough, bezSize).reverse();
+  var cpts = curve(pts, bezSize).reverse();
+
+  var curves = [];
+  for (var r = -1; r < 1; r+=0.1) {
+    //var wave;
+    var pp=[];
+    for (var i = 0; i < cpts.length; i++) {
+      var p = cpts[i];
+      if(r < 0.0) {
+        var h = rpts[i];
+        pp[i] = newPt(p.x,((1+r) * p.y - r * h.y));
+      }
+      else {
+        var s = spts[i];
+        pp[i] = newPt(p.x,((1-r) * p.y + r * s.y));
+      }
+    }
+    //wave = ptsToWave(pp,h);
+    //waves.push(wave);
+    curves.push(pp);
+  }
+  
+  return curves;//.reverse();//waves;
+}
+
+function wavesRange(pts,h) {
+  var curves = curvesRange(pts, h);
+  var waves = [];
+  for (i in curves) {
+    waves[i] = ptsToWave(curves[i], h);
+  }
+  return waves;
+}
 
 ////////////////////////////////////////////////
 
