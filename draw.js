@@ -51,18 +51,18 @@ function addPath(svg,pts) {
 }
 
 function clearControls(svg) {
-  /*if(pts)
+  if(pts)
     pts.forEach(function (e,i,a) {
       var el = document.getElementById('control'+i.toString());
       if (el)
         svg.removeChild(el);
-    });*/
-  var ctls = document.getElementsByTagNameNS(svgNS,'circle');
+    });
+  /*var ctls = document.getElementsByTagNameNS(svgNS,'circle');
   for(var i = 0; i < ctls.length; i++) {
     var ctl = ctls[i];
     if (ctl.id.substr(0,7)=='control')
       svg.removeChild(ctl);
-  }
+  }*/
 }
 
 

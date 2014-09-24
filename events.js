@@ -357,6 +357,7 @@ function type(e) {
     recording = !recording;
   }
   else if (e.keyCode == 83) { //use smoother
+    clearControls(boo);
     if(e.shiftKey) {
       pts=rougher(pts);
     }
@@ -367,7 +368,7 @@ function type(e) {
       pts=smoother(pts);
     }
     fixXs();
-    clearControls(boo);
+
     drawControls(boo);
     newWave=reWave(pts,boo.height.baseVal.value);
   }

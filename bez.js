@@ -197,7 +197,7 @@ function smoother(pts) {
   var last = pts[0];
   var mids = [];
   var diffs = [];
-  var npts = [newPt(pts[0].x,pts[0].y)];
+  var npts = [];
   var min=max=pts[0].y;
   var mini=maxi=maxd=maxdi=mind=mindi=totd=0;
   for (var i = 1; i < pts.length; i++) {
@@ -233,8 +233,8 @@ function smoother(pts) {
   }
   
   var avgd = totd / diffs.length;
-  for (var i = 1; i < diffs.length; i++) {
-    if(diffs[i] > avgd || i==mini || i==maxi) {
+  for (var i = 0; i < diffs.length; i++) {
+    if(diffs[i] > avgd || i==mini || i==maxi || i <= 1 || i >= pts.length - 2) {
       var pt=pts[i];
       npts.push(newPt(pt.x,pt.y));
     }
