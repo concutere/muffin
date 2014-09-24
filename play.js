@@ -36,7 +36,13 @@
       o['time']=ctx.currentTime;
       o['hz']=hz;
       o['vol']=vol;
-
+      var start = o['start']=ctx.currentTime;
+      
+      var attack = (1000-adsrPts[1].x)/1000;
+      var decay = (1000-adsrPts[2].x)/1000;
+      var sustain = (1000-adsrPts[3].x)/1000;
+      var release = (1000-adsrPts[4].x)/1000;
+      
       var gain = ctx.createGain();
       var oscillator = ctx.createOscillator();
       analyser = analyser || ctx.createAnalyser();
@@ -85,6 +91,29 @@
         }
         else {
           if(wave=='custom') {
+            if(waves) {
+              var diff = ctx.currentTime - start;
+              /*if (diff <= attack) {
+                var i = 10 - Math.floor(diff/attack * 10);
+                newWave = waves[i];
+              }
+              else if ( diff <= decay) {
+                var i = Math.floor(diff/(decay-attack) * 8);
+                newWave = waves[i];
+              }
+              else*/ if (diff <= decay) {
+                var i = Math.max(0,Math.floor(diff/(decay) * 10));
+                newWave = waves[i];
+                console.log(i);
+              }
+              else if (diff == decay)
+                newWave=waves[10];
+              else {//if (diff <= release) {
+                var i = Math.min(20,10 + Math.floor(diff/(release - decay) * 10));
+                newWave = waves[i];
+                console.log(i);
+              }
+            }
             if (newWave) {
               currWave = newWave;
               newWave = undefined;

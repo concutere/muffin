@@ -372,6 +372,14 @@ function type(e) {
     drawControls(boo);
     newWave=reWave(pts,boo.height.baseVal.value);
   }
+  else if(e.keyCode==87) { // toggle interim waves
+    if (waves) {
+      waves = undefined;
+    }
+    else {
+      waves = wavesRange(pts,boo.height.baseVal.value);
+    }
+  }
   else if(e.keyCode==88) { // toggle axis freedom of control points
     fixX = !fixX;
   }
