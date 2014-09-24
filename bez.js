@@ -134,3 +134,112 @@ function bezier(pts,size) {
   }
   return acc;
 }
+
+
+
+/////////////////////////////////////////////
+
+
+
+//rougher will add intermediary spikes between existing points, resulting in a len*3 (-2 for endpts) list
+//TODO add scaling factor to limit which segments get split/roughened
+//x's currently get autofixed after call (TODO move to call w/in fns?)
+
+function rougher(pts) {
+  var mids = [];
+  var diffs = [];
+  var npts = [pts[0]];
+  for (var i = 1; i < pts.length; i++) {
+    var last = pts[i-1];
+    var pt = pts[i];
+    var diff = pt.y - last.y; 
+    var mp = midPt(pt,last);
+    var my = last.y + diff / 2;
+    //mids.push(mp);
+
+    //diffs.push(diff);
+    //var xd = (pt.x - last.x) / 3;
+    
+    var a = newPt(last.x +1, my + diff/20);
+    var b = newPt(last.x + 2, my - diff/20);
+    npts.push(a);
+    npts.push(b);
+    npts.push(newPt(pt.x,pt.y));
+  }
+  
+  return npts;
+}
+
+function straighter(pts) {
+  var last = pts[0];
+  var mids = [];
+  var diffs = [];
+  var npts = [newPt(pts[0].x,pts[0].y)];
+  for (var i = 1; i < pts.length; i++) {
+    var pt = pts[i];
+    if (last) {
+      var mp = midPt(pt,last);
+      //mids.push(mp);
+      var diff = pt.y - last.y;
+      var my = last.y + diff / 2;
+      //diffs.push(diff);
+
+      npts.push(newPt(last.x+1,my));
+      npts.push(newPt(pt.x,pt.y));
+    }
+    last = pt;
+  }
+  
+  return npts;
+}
+
+function smoother(pts) {
+  var last = pts[0];
+  var mids = [];
+  var diffs = [];
+  var npts = [newPt(pts[0].x,pts[0].y)];
+  var min=max=pts[0].y;
+  var mini=maxi=maxd=maxdi=mind=mindi=totd=0;
+  for (var i = 1; i < pts.length; i++) {
+    var pt = pts[i];
+    if (last) {
+      if(min>pt.y) {
+        min = pt.y;
+        mini = i;
+      }
+      else if (max<pt.y) {
+        max = pt.y;
+        maxi = i;
+      }
+      var mp = midPt(last,pt);
+      mids.push(mp);
+      var diff = pt.y - last.y;
+      var my = last.y + diff / 2;
+      diffs.push(diff);
+      totd+=diff;
+      if(mind > diff) {
+        mind = diff;
+        mindi = i;
+      }
+      else if (maxd < diff) {
+        maxd = diff;
+        maxdi = i;
+      }
+
+      /*npts.push(newPt(last.x+1,my));
+      npts.push(newPt(pt.x,pt.y));*/
+    }
+    last = pt;
+  }
+  
+  var avgd = totd / diffs.length;
+  for (var i = 1; i < diffs.length; i++) {
+    if(diffs[i] > avgd || i==mini || i==maxi) {
+      var pt=pts[i];
+      npts.push(newPt(pt.x,pt.y));
+    }
+  }
+  npts.push(newPt(pts[pts.length-1].x,pts[pts.length-1].y));
+  
+  return npts;
+}

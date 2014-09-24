@@ -127,7 +127,7 @@ function reWave(pts,h,w) {
   var cpts = curve(pts,bezSize).reverse();
   var vals=vals||new Float32Array(cpts.length);
 
-  drawWave(cpts,h,w);
+  drawWave(cpts);
   
   for (var i = 0; i < cpts.length; i++) {
     //TODO how can x be used in an intuitive way?
@@ -167,10 +167,10 @@ function loopRecord() {
   if (recording) {
     var freqs = new Uint8Array(ma.frequencyBinCount);
     ma.getByteFrequencyData(freqs);
-    graphByteFreqs(freqs,'blue','micgraph');
+    graphByteFreqs(freqs,'blue');
     var times = new Uint8Array(ma.frequencyBinCount);
     ma.getByteTimeDomainData(times);
-    graphByteTimes(times,'red','micgraph');
+    graphByteTimes(times,'red');
     requestAnimationFrame(loopRecord);
   }
 }

@@ -51,12 +51,18 @@ function addPath(svg,pts) {
 }
 
 function clearControls(svg) {
-  if(pts)
+  /*if(pts)
     pts.forEach(function (e,i,a) {
-      var el = document.getElementById('control'+i);
+      var el = document.getElementById('control'+i.toString());
       if (el)
         svg.removeChild(el);
-    });
+    });*/
+  var ctls = document.getElementsByTagNameNS(svgNS,'circle');
+  for(var i = 0; i < ctls.length; i++) {
+    var ctl = ctls[i];
+    if (ctl.id.substr(0,7)=='control')
+      svg.removeChild(ctl);
+  }
 }
 
 
@@ -92,7 +98,7 @@ function graphByteFreqs(freqs,clr,parent) {
     var steph = ratio; // * h;
     var y = h - steph - 1;
     var el = document.getElementById('bytefreq'+i) || document.createElementNS(svgNS,'rect')
-    el.id='bytefreq'+i;
+    el.id='bytefreq'+(parent ? parent : '') + i;
     el.setAttribute('x', i * stepw);
     el.setAttribute('y', y);
     el.setAttribute('width', stepw);
@@ -119,8 +125,8 @@ function graphByteTimes(times,clr, parent) {
     var ratio = times[i]; // / 256; 
     var steph = ratio; // * h;
     var y = h - steph - 1;
-    var el = document.getElementById('bytetime'+i) || document.createElementNS(svgNS,'rect')
-    el.id='bytetime'+i;
+    var el = document.getElementById('bytetime'+(parent ? parent : '') + i) || document.createElementNS(svgNS,'rect')
+    el.id='bytetime'+(parent ? parent : '') + i;
     el.setAttribute('x', i * stepw);
     el.setAttribute('y', y);
     el.setAttribute('width', stepw*2);
@@ -135,6 +141,9 @@ function graphByteTimes(times,clr, parent) {
 function clearFreqs(g) {
   for (var i = 0; i <= 1024; i++) {
     var el = document.getElementById('bytefreq'+i);
+    if (el)
+      g.removeChild(el);
+    el = document.getElementById('bytefreqmicgraph'+i);
     if (el)
       g.removeChild(el);
   }

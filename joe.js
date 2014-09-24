@@ -74,6 +74,18 @@ if(!params) params=/*[newPt(0,0.1667),//start from
     }
   }   
 
+  
+  //////////////////////////////////////////////////
+  
+  
+  
+  
+  
+  
+  
+  //////////////////////////////////////////////////////
+  //AudioNode (mainly filter) convenience functions
+  //////////////////////////////////////////////////////
   Joe.prototype.turnitdown = function(compressor) {
     var compressor  = compressor || getCtx().createDynamicsCompressor();
     compressor.threshold.value = -40;
@@ -111,3 +123,4 @@ if(!params) params=/*[newPt(0,0.1667),//start from
     return bandpass;  
   }
 }
+

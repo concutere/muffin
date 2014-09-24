@@ -308,14 +308,13 @@ function rept(e) {
   }
   reWave(pts,h,w);
   
-  function fixXs() {
-    var seglen = w / (pts.length-1);
-    for (var i = 0;i < pts.length; i++) {
-      pts[i].x = seglen * i;
-    }
+}
+function fixXs() {
+  var seglen = boo.width.baseVal.value / (pts.length-1);
+  for (var i = 0;i < pts.length; i++) {
+    pts[i].x = seglen * i;
   }
 }
-
 //TODO move slide related stuff to separate file
 var slide = 0;
 var recording = false;
@@ -356,6 +355,21 @@ function type(e) {
       initRecord();
     }
     recording = !recording;
+  }
+  else if (e.keyCode == 83) { //use smoother
+    if(e.shiftKey) {
+      pts=rougher(pts);
+    }
+    else if (e.AltKey){
+      pts=straighter(pts);
+    }
+    else {
+      pts=smoother(pts);
+    }
+    fixXs();
+    clearControls(boo);
+    drawControls(boo);
+    newWave=reWave(pts,boo.height.baseVal.value);
   }
   else if(e.keyCode==88) { // toggle axis freedom of control points
     fixX = !fixX;

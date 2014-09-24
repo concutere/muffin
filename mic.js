@@ -8,7 +8,7 @@
 function Mic(connectTo) {
   this.to = connectTo;
   this.data = [];
-  this.vol = undefined;
+  //this.vol = undefined;
   this.input = undefined;
   this.cb = undefined;
   var self = this;
@@ -26,13 +26,13 @@ function Mic(connectTo) {
   
   Mic.prototype.recordback = function recordback(stream) {
     var ctx = getCtx();
-    self.vol = ctx.createGain();
+    //self.vol = ctx.createGain();
     self.input = ctx.createMediaStreamSource(stream);
-    self.input.connect(self.vol);
+    //self.input.connect(self.vol);
     if(self.to)
-      self.vol.connect(self.to);
+      self.input.connect(self.to);
     else
-      self.vol.connect(ctx.destination);
+      self.input.connect(ctx.destination);
     if (self.cb instanceof Function)
       self.cb();
   }
@@ -40,8 +40,8 @@ function Mic(connectTo) {
   Mic.prototype.dc = function dc() {
     self.input.disconnect(self.vol);
     if (self.to) 
-      self.vol.disconnect(ma);
+      self.input.disconnect(ma);
     else  
-      self.vol.disconnect(ctx.destination);
+      self.input.disconnect(ctx.destination);
   }
 }
