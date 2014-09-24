@@ -93,26 +93,30 @@
           if(wave=='custom') {
             if(waves) {
               var diff = ctx.currentTime - start;
-              /*if (diff <= attack) {
-                var i = 10 - Math.floor(diff/attack * 10);
-                newWave = waves[i];
+              var i = 10;
+              var stage='?';
+              if (diff <= attack) {
+                i = 10 - Math.floor(diff/attack * 10);
+                stage='attack';
               }
               else if ( diff <= decay) {
-                var i = Math.floor(diff/(decay-attack) * 8);
-                newWave = waves[i];
+                i = Math.floor((diff-attack)/(decay-attack) * 8);
+                stage='decay';
               }
-              else*/ if (diff <= decay) {
-                var i = Math.max(0,Math.floor(diff/(decay) * 10));
-                newWave = waves[i];
-                console.log(i);
+              else if (diff <= sustain) {
+                i = 8 + Math.max(0,Math.floor((diff-decay)/(sustain-decay) * 4));
+                stage='sustain';
               }
-              else if (diff == decay)
-                newWave=waves[10];
+              else if (diff == sustain) {
+                i=10;
+                stage='sustain++';
+              }
               else {//if (diff <= release) {
-                var i = Math.min(20,10 + Math.floor(diff/(release - decay) * 10));
-                newWave = waves[i];
-                console.log(i);
+                i = Math.min(20,12 + Math.floor((diff-sustain)/(release - decay) /* * 8 */));
+                stage='else';
               }
+              newWave = waves[i];
+              console.log('i: ' + i + '\ndiff: '+ diff + '\nstage: '+ stage);
             }
             if (newWave) {
               currWave = newWave;
