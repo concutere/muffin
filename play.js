@@ -96,33 +96,32 @@
               var i = 10;
               var stage='?';
               if (diff <= attack) {
-                i = 10 - Math.floor(diff/attack * 10);
+                i = 9 - Math.floor(diff/attack * 4);
                 stage='attack';
               }
               else if ( diff <= decay) {
-                i = Math.floor((diff-attack)/(decay-attack) * 8);
+                i = 6+Math.floor((diff-attack)/(decay-attack) * 4);
                 stage='decay';
               }
               else if (diff <= sustain) {
-                i = 8 + Math.max(0,Math.floor((diff-decay)/(sustain-decay) * 4));
+                i = 10 + Math.max(0,Math.floor((diff-decay)/(sustain-decay) * 2));
                 stage='sustain';
               }
-              else if (diff == sustain) {
-                i=10;
-                stage='sustain++';
-              }
               else {//if (diff <= release) {
-                i = Math.min(20,12 + Math.floor((diff-sustain)/(release - decay) /* * 8 */));
+                i = 14 + Math.floor((diff-sustain)/(release - decay)  * 2);
+                if (i > waves.length) {
+                
+                }
                 stage='else';
               }
               newWave = waves[i];
               console.log('i: ' + i + '\ndiff: '+ diff + '\nstage: '+ stage);
             }
-            if (newWave) {
+            if (newWave && newWave != currWave) {
               currWave = newWave;
               newWave = undefined;
+              oscillator.setPeriodicWave(currWave);
             }
-            oscillator.setPeriodicWave(currWave);
           }
           else
             oscillator.type = wave;
