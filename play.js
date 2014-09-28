@@ -73,9 +73,9 @@
         }
         else  
           gain.gain.setValueAtTime(vol,ctx.currentTime);
-
       }
       var recur = recur || function recur() {
+      var playWave=undefined;
         if (isNaN(hz) || o['stop']===true) {
           try {
             if (useAdsr) {
@@ -114,13 +114,16 @@
                 }
                 stage='else';
               }
-              newWave = waves[i];
+              playWave = waves[i];
               console.log('i: ' + i + '\ndiff: '+ diff + '\nstage: '+ stage);
             }
             if (newWave && newWave != currWave) {
-              currWave = newWave;
+              currWave = playWave = newWave;
               newWave = undefined;
-              oscillator.setPeriodicWave(currWave);
+            }
+            if(playWave) {
+              oscillator.setPeriodicWave(playWave);
+              playWave=undefined;
             }
           }
           else
@@ -235,23 +238,24 @@ function cancelAll() {
 function initRecord() {
   var ctx = getCtx();
   ma = ma || ctx.createAnalyser();
-  mic = new Mic(ma);
-  mic.record(loopRecord);
+  mic = mic ? mic.resume() : new Mic();
+  //mic.record(loopRecord);
 }
 
 function loopRecord() {
   if (recording) {
+    //drawGraph(ma);
     var freqs = new Uint8Array(ma.frequencyBinCount);
     ma.getByteFrequencyData(freqs);
     graphByteFreqs(freqs,'blue');
     var times = new Uint8Array(ma.frequencyBinCount);
     ma.getByteTimeDomainData(times);
     graphByteTimes(times,'red');
-    requestAnimationFrame(loopRecord);
   }
+  requestAnimationFrame(loopRecord);
 }
 
 function stopRecord() {
   mic.dc();
-  mic=undefined;
+  //mic=undefined;
 }
