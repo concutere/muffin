@@ -74,8 +74,9 @@
         else  
           gain.gain.setValueAtTime(vol,ctx.currentTime);
       }
+            var playWave=undefined;
       var recur = recur || function recur() {
-      var playWave=undefined;
+
         if (isNaN(hz) || o['stop']===true) {
           try {
             if (useAdsr) {
@@ -121,6 +122,10 @@
               currWave = playWave = newWave;
               newWave = undefined;
             }
+            else if (oscillator.type != wave) {
+              playWave = currWave;
+            }
+            
             if(playWave) {
               oscillator.setPeriodicWave(playWave);
               playWave=undefined;
