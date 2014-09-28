@@ -276,3 +276,29 @@ var w = 1000, h = 200;
     el.setAttribute('cy',h-pts[i].y);
   }
 }
+
+
+function drawGraph(analyser) {
+  /*var svg = document.getElementById('boo');
+  var w= 1024;
+  var h = 255;
+*/
+  var freqs = new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteFrequencyData(freqs);
+  graphByteFreqs(freqs);
+  var times = new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteTimeDomainData(times);
+  graphByteTimes(times);
+  
+}
+
+function drawGraphData(data) {
+  var svg = document.getElementById('boo');
+  var w= 1024;
+  var h = 255;
+
+  data=Array.prototype.map.call(data,function(e) { return 127 + e * 128; });
+  //for(var i = 0; i < w && i < data.length; i++) {
+    graphByteTimes(data);
+  //}
+}

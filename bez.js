@@ -245,6 +245,7 @@ function smoother(pts) {
 }
 
 function insine(pts,w,h) {
+  var npts = [newPt(pts[0].x,pts[0].y)];
   for (var i = 1; i < pts.length; i++) {
     var last = pts[i-1];
     var pt = pts[i];

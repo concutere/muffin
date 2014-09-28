@@ -49,6 +49,10 @@ function init(e) {
     setTimeout(init,1);
     return;
   }
+  else if (recording) {
+    initRecord();
+    return;
+  }
   var yy = h/2;
   pts=[];
   pp=[];
@@ -317,19 +321,23 @@ function fixXs() {
 }
 //TODO move slide related stuff to separate file
 var slide = 0;
-var recording = false;
-
+var framestep = bufstep = 0;
+var lastframe = lastbuf = 0;
 function type(e) {
   //key handler
   var k =e.keyIdentifier;
-  var arrows = ['Up','Right','Left','Down'];
-  if(arrows.indexOf(k)>=0) {
-    var el = document.getElementById('slide'+slide);
-    if (arrows.indexOf(k) % 2 != 0) {
-      slide += 1; 
+  var arrows = ['Up','Right','Down','Left'];
+  var idx = arrows.indexOf(k);
+  if(idx>=0) {
+    if (idx % 2 != 0) {
+      // TODO shift full frame up/down (reset at buffer bound?)
+      framestep = idx * 2 - 1;
+      
     }
-    if (el)
-      el.className='roll' + k;
+    else {
+      // TODO scroll incrementally across buffer frame bounds
+      bufstep = 2 * ((idx - 1) * 2 - 1);
+    }
   }
   else if(e.keyCode==27) { //escape
     cancelAll();
@@ -362,7 +370,7 @@ function type(e) {
       pts=rougher(pts);
     }
     else if (e.altKey){
-      pts=insine(pts);
+      pts=straighter(pts);
     }
     else {
       pts=smoother(pts);
