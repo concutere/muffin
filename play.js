@@ -105,11 +105,11 @@
                 stage='decay';
               }
               else if (diff <= sustain) {
-                i = 10 + Math.max(0,Math.floor((diff-decay)/(sustain-decay) * 2));
+                i = 10 + Math.max(0,Math.floor((diff-decay)/(sustain-decay) * 8));
                 stage='sustain';
               }
               else {//if (diff <= release) {
-                i = 14 + Math.floor((diff-sustain)/(release - decay)  * 2);
+                i = 14 + Math.floor((diff-sustain)/(release - decay)  * 4);
                 if (i > waves.length) {
                 
                 }

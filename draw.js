@@ -297,7 +297,7 @@ function drawGraphData(data) {
   var w= 1024;
   var h = 255;
 
-  data=Array.prototype.map.call(data,function(e) { return 127 + e * 128; });
+  data=Array.prototype.map.call(data,function(e) { return 128 + e * 127; });
   //for(var i = 0; i < w && i < data.length; i++) {
     graphByteTimes(data);
   //}

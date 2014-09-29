@@ -321,23 +321,30 @@ function fixXs() {
 }
 //TODO move slide related stuff to separate file
 var slide = 0;
-var framestep = bufstep = 0;
 var lastframe = lastbuf = 0;
 function type(e) {
+var framestep = bufstep = 0;
   //key handler
   var k =e.keyIdentifier;
   var arrows = ['Up','Right','Down','Left'];
   var idx = arrows.indexOf(k);
   if(idx>=0) {
-    if (idx % 2 != 0) {
+    if(mic.isrecording()) {
+      mic.pause();
+      lastframe = mic.framesize() -1;
+    }
+    if (idx % 2 == 0) {
       // TODO shift full frame up/down (reset at buffer bound?)
       framestep = idx * 2 - 1;
-      
+      bufstep=0;
     }
     else {
       // TODO scroll incrementally across buffer frame bounds
       bufstep = 2 * ((idx - 1) * 2 - 1);
+      framestep=0;
     }
+    lastframe = Math.min(mic.framesize()-1, Math.max(0, lastframe+framestep));
+    requestAnimationFrame(function() {drawGraphData(mic.frame(lastframe))});
   }
   else if(e.keyCode==27) { //escape
     cancelAll();

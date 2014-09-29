@@ -38,6 +38,10 @@ function Mic(connectTo,handler) {
     return self;
   };
   
+  Mic.prototype.isrecording =function isrecording() {
+    return !self.paused;
+  }
+  
   Mic.prototype.recordback = function recordback(stream) {
     var ctx = getCtx();
     //self.vol = ctx.createGain();
@@ -57,10 +61,13 @@ function Mic(connectTo,handler) {
         //console.log('in rec');
         if(!self.paused) {
           var data = e.inputBuffer.getChannelData(0);
-          requestAnimationFrame(function() {drawGraphData(data)});
-          self.frames.push(data);
-          if(self.frames.length >= 1024) //TODO ...
-            self.frames.pop();
+          if(!self.paused) {
+            self.frames.push(Array.prototype.slice.call(data,0)); 
+            requestAnimationFrame(function() {drawGraphData(data)});
+
+            /*if(self.frames.length >= 1024) //TODO ...
+              self.frames.pop();
+        */}
         }
       }
     }
@@ -75,6 +82,13 @@ function Mic(connectTo,handler) {
       self.input.disconnect(ctx.destination);
   }
   
+  Mic.prototype.frame = function frame(idx) {
+    return self.frames[idx];
+  }
+  
+  Mic.prototype.framesize = function framesize() {
+    return self.frames.length;
+  }
   //constructor code 
   if (handler)
     self.record(handler);
