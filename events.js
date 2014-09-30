@@ -334,17 +334,35 @@ var framestep = bufstep = 0;
       lastframe = mic.framesize() -1;
     }
     if (idx % 2 == 0) {
-      // TODO shift full frame up/down (reset at buffer bound?)
       framestep = idx * 2 - 1;
-      bufstep=0;
+      bufstep=lastbuf=0;
     }
     else {
-      // TODO scroll incrementally across buffer frame bounds
-      bufstep = 2 * ((idx - 1) * 2 - 1);
-      framestep=0;
+      bufstep = 8 * ((idx - 2));
+      lastbuf+=bufstep;
+      if (lastbuf < -1023) {
+        framestep=-1;
+        bufstep=lastbuf=0;//+=1024;
+      }
+      else if (bufstep > 1023) {
+        framestep = 1;
+        bufstep=lastbuf=0;//-= 1024;
+      }
+      else
+        framestep=0;
     }
     lastframe = Math.min(mic.framesize()-1, Math.max(0, lastframe+framestep));
-    requestAnimationFrame(function() {drawGraphData(mic.frame(lastframe))});
+    var frame = mic.frame(lastframe);
+    if (lastbuf < 0) {
+      var pre = mic.frame(lastframe-1).slice(1024+lastbuf)
+      frame = pre.concat(frame.slice(0,1024+lastbuf));
+    }
+    else if (lastbuf > 0) {
+      var post = mic.frame(lastframe+1).slice(0,lastbuf);
+      frame=frame.slice(lastbuf).concat(post);
+    }
+      
+    requestAnimationFrame(function() {drawGraphData(frame)});
   }
   else if(e.keyCode==27) { //escape
     cancelAll();
