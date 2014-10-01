@@ -130,7 +130,7 @@ function graphByteTimes(times,clr, parent) {
     el.setAttribute('x', i * stepw);
     el.setAttribute('y', y);
     el.setAttribute('width', stepw*2);
-    el.setAttribute('height',y*stepw*2);
+    el.setAttribute('height',h-y);
     if (!el.parentElement) {
       el.setAttribute('fill',clr ? clr : '#b6b');
       g.appendChild(el);
