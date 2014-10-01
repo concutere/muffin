@@ -338,7 +338,7 @@ var framestep = bufstep = 0;
       bufstep=lastbuf=0;
     }
     else {
-      bufstep = 8 * ((idx - 2));
+      bufstep = -8 * ((idx - 2));
       lastbuf+=bufstep;
       if (lastbuf < -1023) {
         framestep=-1;
@@ -353,18 +353,23 @@ var framestep = bufstep = 0;
     }
     lastframe = Math.min(mic.framesize()-1, Math.max(0, lastframe+framestep));
     var frame = mic.frame(lastframe);
-    if (lastbuf < 0) {
+    if (lastbuf < 0 && lastframe > 0) {
       var pre = mic.frame(lastframe-1).slice(1024+lastbuf)
       frame = pre.concat(frame.slice(0,1024+lastbuf));
     }
-    else if (lastbuf > 0) {
+    else if (lastbuf > 0 && lastframe < mic.framesize()-1) {
       var post = mic.frame(lastframe+1).slice(0,lastbuf);
       frame=frame.slice(lastbuf).concat(post);
     }
       
     requestAnimationFrame(function() {drawGraphData(frame)});
   }
-  else if(e.keyCode==27) { //escape
+  
+  //TODO why doesn't Chrome ever set repeat to true?
+  if(e.repeat)
+    return;
+    
+  if(e.keyCode==27) { //escape
     cancelAll();
   }
   /*else if(e.keyCode==83) { // S - sine 
@@ -499,5 +504,6 @@ document.addEventListener('touchend', up);
   move(e.touches[0]);
 });*/
 document.addEventListener('dblclick', rept);
-document.addEventListener('keyup',type);
+//document.addEventListener('keyup',type);
+document.addEventListener('keydown',type);
 document.addEventListener('DOMContentLoaded', init);
