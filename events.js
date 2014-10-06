@@ -411,8 +411,10 @@ var framestep = bufstep = 0;
     newWave=reWave(pts,boo.height.baseVal.value);
   }
   else if(e.keyCode==87) { // toggle interim waves
+    bendy = undefined;
     if (waves) {
       waves = undefined;
+      newWave=reWave(pts,document.getElementById('boo').height.baseVal.value);
     }
     else {
       waves = wavesRange(pts,boo.height.baseVal.value);

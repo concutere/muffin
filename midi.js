@@ -6,6 +6,7 @@
     var o = outputs[0];
   }
   
+  var bendy=undefined;
   function midiMsg(e) {
     var cmd = e.data[0] >> 4;
     var chan = e.data[0] & 0xf;
@@ -39,5 +40,7 @@
       //else
       playing[i] = play(i,hit/100.0);
     }
-    
+    else if (cmd == 14) {
+      bendy = hit;
+    }
   }

@@ -92,31 +92,47 @@
         }
         else {
           if(wave=='custom') {
-            if(waves) {
-              var diff = ctx.currentTime - start;
-              var i = 10;
-              var stage='?';
-              if (diff <= attack) {
-                i = 9 - Math.floor(diff/attack * 4);
-                stage='attack';
-              }
-              else if ( diff <= decay) {
-                i = 6+Math.floor((diff-attack)/(decay-attack) * 4);
-                stage='decay';
-              }
-              else if (diff <= sustain) {
-                i = 10 + Math.max(0,Math.floor((diff-decay)/(sustain-decay) * 8));
-                stage='sustain';
-              }
-              else {//if (diff <= release) {
-                i = 14 + Math.floor((diff-sustain)/(release - decay)  * 4);
-                if (i > waves.length) {
-                
+              if(!isNaN(bendy)) {
+                if(!waves || waves.length < 1) {//TODO no dom ref in here
+                  console.log('getting waves');
+                  waves = wavesRange(pts,document.getElementById('boo').height.baseVal.value);
                 }
-                stage='else';
-              }
-              playWave = waves[i];
-              console.log('i: ' + i + '\ndiff: '+ diff + '\nstage: '+ stage);
+                var ratio = waves.length / 128;
+                var i = waves.length - Math.floor(ratio*bendy) - 1;
+                if(currWave != waves[i]) {
+                  playWave=waves[i];
+                  console.log('bendy ' + i);
+                }
+                else bendy = undefined;
+              }  
+              else if(waves) {
+          
+              //else {
+                var diff = ctx.currentTime - start;
+                var i = 10;
+                var stage='?';
+                if (diff <= attack) {
+                  i = 10 - Math.floor(diff/attack * 4);
+                  stage='attack';
+                }
+                else if ( diff <= decay) {
+                  i = 6+Math.floor((diff-attack)/(decay-attack) * 4);
+                  stage='decay';
+                }
+                else if (diff <= sustain) {
+                  i = 10 + Math.max(0,Math.floor((diff-decay)/(sustain-decay) * 6));
+                  stage='sustain';
+                }
+                else {//if (diff <= release) {
+                  i = 16 + Math.floor((diff-sustain)/(release - decay)  * 4);
+                  if (i > waves.length) {
+                  
+                  }
+                  stage='else';
+                }
+                playWave = waves[i];
+                console.log('i: ' + i + '\ndiff: '+ diff + '\nstage: '+ stage);
+              //}
             }
             if (newWave && newWave != currWave) {
               currWave = playWave = newWave;
