@@ -1,6 +1,6 @@
-### bez
+### Muffin
 
-shaping sounds w/ bezier curves, an interactive demo with high hopes!
+Shaping sound waves, an interactive demo with high hopes!
 
 
 http://concutere.com/bez/bez.html (Chrome only for now)
@@ -20,5 +20,3 @@ http://concutere.com/bez/bez.html (Chrome only for now)
 - 'A' toggles ADSR edit path
 
 
-
-Also, the shapes we're working with here are actually based on nurbs, a type of b-spline similar to beziers (segments are calculated the same but composite function is simpler as no intermediate end points need be defined).
