@@ -29,14 +29,22 @@
     var mic = undefined;
     var joe = new Joe();
     var adsrPts = joe.goggles(1000,100);
-    function play(hz,vol) {
+    function play(hz,vol,stopat,startat) {
       var ctx = getCtx(); 
       var o = new Object();
       o['stop']=false;
       o['time']=ctx.currentTime;
       o['hz']=hz;
       o['vol']=vol;
-      var start = o['start']=ctx.currentTime;
+      if (stopat)
+        o['stopat']=stopat;
+      
+      var start = o['start']= ctx.currentTime + (startat ? startat : 0);
+      
+      if (recLoop) {
+        if (!loopd) loopd=new Rosette(ctx.currentTime);
+        o['loopr']=loopd.add(start,0,hz,vol,currWave);
+      }
       
       var attack = (1000-adsrPts[1].x)/1000;
       var decay = (1000-adsrPts[2].x)/1000;
@@ -75,10 +83,21 @@
           gain.gain.setValueAtTime(vol,ctx.currentTime);
       }
             var playWave=undefined;
+            var lasti = -1;
+            var waveUp = true;
       var recur = recur || function recur() {
-
+        if(!isNaN(o['stopat'])) {
+          if(ctx.currentTime - o['start'] >= o['stopat']) {
+          console.log(ctx.currentTime + '; setting stop flag for stopat: ' + o['stopat'] + ', start: ' + o['start']);
+          o['stop']=true;
+        }
+        //else 
+          //console.log(ctx.currentTime + '\n' + o['start'] + '\n<' + o['stopat']);
+        }
         if (isNaN(hz) || o['stop']===true) {
           try {
+            if(recLoop && o['loopr'])
+              loopd.crumble(o['loopr'],ctx.currentTime);
             if (useAdsr) {
               joe.release(ctx.currentTime,vol,gain,oscillator);
             }
@@ -94,14 +113,13 @@
           if(wave=='custom') {
               if(!isNaN(bendy)) {
                 if(!waves || waves.length < 1) {//TODO no dom ref in here
-                  console.log('getting waves');
                   waves = wavesRange(pts,document.getElementById('boo').height.baseVal.value);
                 }
                 var ratio = waves.length / 128;
                 var i = waves.length - Math.floor(ratio*bendy) - 1;
                 if(currWave != waves[i]) {
                   playWave=waves[i];
-                  console.log('bendy ' + i);
+                  //console.log('bendy ' + i);
                 }
                 else bendy = undefined;
               }  
@@ -125,8 +143,20 @@
                 }
                 else {//if (diff <= release) {
                   i = 16 + Math.floor((diff-sustain)/(release - decay)  * 4);
-                  if (i > waves.length) {
-                  
+                  if (i >= waves.length) {
+                  i=waves.length-1;
+                    /*
+                    TODO create subrange of waves for smoother oscillation of wave morphs
+                    var ii = (i - 16);
+                    if (lasti != ii && ii % 4 == 0) {
+                      waveUp = !waveUp;
+                    }
+                      lasti = ii;
+                    if(waveUp)
+                      i = 20 - ii % 4;
+                    else  
+                      i = 16 + ii % 4;
+                      */
                   }
                   stage='else';
                 }
@@ -167,7 +197,7 @@
       };
 
       if (!mute) {
-        oscillator.start();
+        oscillator.start(start);
       }
       requestAnimationFrame(recur);
       
@@ -279,4 +309,13 @@ function loopRecord() {
 function stopRecord() {
   mic.dc();
   //mic=undefined;
+}
+
+
+///////////////////////////
+
+function playLoop() {
+  var ctx = getCtx();
+  loopd.end=ctx.currentTime-loopd.start;
+  loopd.poot(ctx);
 }

@@ -88,7 +88,7 @@ if(!params) params=/*[newPt(0,0.1667),//start from
   //////////////////////////////////////////////////////
   Joe.prototype.turnitdown = function(compressor) {
     var compressor  = compressor || getCtx().createDynamicsCompressor();
-    compressor.threshold.value = -40;
+    compressor.threshold.value = -50;
     compressor.knee.value = 50;
     compressor.ratio.value = 8;
     compressor.reduction.value = -8;

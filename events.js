@@ -319,6 +319,8 @@ function fixXs() {
     pts[i].x = seglen * i;
   }
 }
+
+var loopd;
 //TODO move slide related stuff to separate file
 var slide = 0;
 var lastframe = lastbuf = 0;
@@ -441,6 +443,13 @@ var framestep = bufstep = 0;
     else 
       g.className.baseVal = 'hide';*/
       hideEl('graph');
+  }
+  else if (e.keyCode==76) { //L - record/playback loop
+    recLoop = !recLoop;
+    if(recLoop) 
+      loopd=undefined;
+    else
+      playLoop();
   }
   else if (e.keyCode==77) { //M - toggle mute
     mute = !mute;
