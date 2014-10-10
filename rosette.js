@@ -32,15 +32,15 @@ function Rosette(start) {
         end = ctx.currentTime - this.start;
         //console.log('defaulting end');
       }
-      //console.log('pooting ' + this.pitch + ' at ' + this.start + ' for ' + end);
+      console.log('pooting ' + ant.pitch + ' at ' + ant.start + ' for ' + end);
 
-      play(ant.pitch,ant.vol, end,ant.start);
+      play(ant.pitch,ant.vol, end,Math.abs(ant.start));
     }
   }
   
   Rosette.prototype.crumble = function(ant, at) {
-    ant.dur = at-this.start;
-    console.log('crumbled' + ant.dur);
+    ant.dur = at-(this.start+ant.start);
+    console.log('crumbled ' + ant.dur + ', at: ' + at + ', ant.start: ' + ant.start + ', this.start: ' + this.start);
   }
   
   Rosette.prototype.toString = function() {

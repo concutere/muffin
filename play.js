@@ -29,15 +29,20 @@
     var mic = undefined;
     var joe = new Joe();
     var adsrPts = joe.goggles(1000,100);
-    function play(hz,vol,stopat,startat) {
+    function play(hz,vol,stopafter,startat) {
       var ctx = getCtx(); 
       var o = new Object();
       o['stop']=false;
       o['time']=ctx.currentTime;
       o['hz']=hz;
       o['vol']=vol;
-      if (stopat)
-        o['stopat']=stopat;
+      if (stopafter)
+        if(stopafter < 0){
+          console.log('dur is neg: '+stopafter);
+          o['stopafter']=-stopafter;
+        }
+        else
+          o['stopafter']=stopafter;
       
       var start = o['start']= ctx.currentTime + (startat ? startat : 0);
       
@@ -53,6 +58,14 @@
       
       var gain = ctx.createGain();
       var oscillator = ctx.createOscillator();
+      //set wave asap to avoid popping (esp w/ polyphony)
+      if(newWave)
+        oscillator.setPeriodicWave(newWave);
+      if(currWave)
+        oscillator.setPeriodicWave(currWave);
+      if(playWave)
+        oscillator.setPeriodicWave(playWave);
+      
       analyser = analyser || ctx.createAnalyser();
 
       //TODO parametrize
@@ -86,14 +99,14 @@
             var lasti = -1;
             var waveUp = true;
       var recur = recur || function recur() {
-        if(!isNaN(o['stopat'])) {
-          if(ctx.currentTime - o['start'] >= o['stopat']) {
-          console.log(ctx.currentTime + '; setting stop flag for stopat: ' + o['stopat'] + ', start: ' + o['start']);
+        if(!isNaN(o['stopafter'])) {
+          if(ctx.currentTime - o['start'] >= o['stopafter']) {
+          console.log(ctx.currentTime + '; setting stop flag for stopafter: ' + o['stopafter'] + ', start: ' + o['start']);
           o['stop']=true;
         }
-        //else 
-          //console.log(ctx.currentTime + '\n' + o['start'] + '\n<' + o['stopat']);
-        }
+        /*else 
+          console.log('pitch: ' + hz + 'time: '+ ctx.currentTime + ', start: ' + o['start'] + ' < ' + o['stopafter']);
+        */}
         if (isNaN(hz) || o['stop']===true) {
           try {
             if(recLoop && o['loopr'])
@@ -161,7 +174,7 @@
                   stage='else';
                 }
                 playWave = waves[i];
-                console.log('i: ' + i + '\ndiff: '+ diff + '\nstage: '+ stage);
+                //console.log('i: ' + i + '\ndiff: '+ diff + '\nstage: '+ stage);
               //}
             }
             if (newWave && newWave != currWave) {

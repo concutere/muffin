@@ -41,6 +41,6 @@
       playing[i] = play(i,hit/100.0);
     }
     else if (cmd == 14) {
-      bendy = hit;
+      bendy = hit == 64 ? undefined : hit;
     }
   }
