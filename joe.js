@@ -10,11 +10,17 @@ if(!params) params=/*[newPt(0,0.1667),//start from
                     newPt(0.25,0.90),//sustain
                     newPt(0.99,0.01),//release
                     ];*/
-                   [newPt(0,0.0/*1667*/),//start from 
+                   /*[newPt(0,0.0),//start from 
                     newPt(0.01,0.86),//attack
                     newPt(0.026,1.03),//decay
                     newPt(0.038,0.85),//sustain
                     newPt(0.545,0.05),//release
+                    ];*/
+                    [newPt(0,0.0),//start from 
+                    newPt(0.048,1.03),//attack
+                    newPt(0.091,0.61),//decay
+                    newPt(0.203,0.6),//sustain
+                    newPt(0.253,0),//release
                     ];
                    
   var quarts = this.quarts = params;
@@ -77,15 +83,6 @@ if(!params) params=/*[newPt(0,0.1667),//start from
   
   //////////////////////////////////////////////////
   
-  
-  
-  
-  
-  
-  
-  //////////////////////////////////////////////////////
-  //AudioNode (mainly filter) convenience functions
-  //////////////////////////////////////////////////////
   Joe.prototype.turnitdown = function(compressor) {
     var compressor  = compressor || getCtx().createDynamicsCompressor();
     compressor.threshold.value = -50;
@@ -96,31 +93,19 @@ if(!params) params=/*[newPt(0,0.1667),//start from
     compressor.release.value = (quarts[quarts.length-1].x - quarts[quarts.length-2].x) / (quarts[quarts.length-1].x - quarts[0].x);
   }
   
-  Joe.prototype.allpass = function() {
-    var allpass = getCtx().createBiquadFilter();
-    allpass.type = 'allpass';
-    allpass.frequency.value=350;
-    allpass.Q.value=25;
-    allpass.detune=5-Math.random() * 10;
-    return allpass;
-  }
-  
-  Joe.prototype.lowpass = function() {
-    var lowpass = getCtx().createBiquadFilter();
-    lowpass.type = 'lowpass';
-    lowpass.frequency.value=1200;
-    lowpass.Q.value=5;
-    lowpass.detune=5-Math.random() * 10;
-    return lowpass;  
-  }
-  
-    Joe.prototype.bandpass = function() {
-    var bandpass = getCtx().createBiquadFilter();
-    bandpass.type = 'allpass';
-    bandpass.frequency.value=110;
-    bandpass.gain.value=50;
-    //bandpass.detune=5-Math.random() * 10;
-    return bandpass;  
+  ////////////////////////////////////////////////////
+  Joe.prototype.getOctaveOffset = function(hz) {
+    var mid = 440;
+    var d = 0.114;
+    var tmp = Math.log(hz)/Math.log(mid);
+    tmp = 9-tmp/d;
+    tmp = Math.ceil(tmp);
+    /*if (tmp < 1) {
+      return 1 - 1/tmp;
+    }
+    else {*/
+      return 1 - tmp;
+    //}
   }
 }
 

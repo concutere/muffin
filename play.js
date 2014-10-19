@@ -98,6 +98,7 @@
             var playWave=undefined;
             var lasti = -1;
             var waveUp = true;
+            var octaveOffset = joe.getOctaveOffset(hz);
       var recur = recur || function recur() {
         if(!isNaN(o['stopafter'])) {
           if(ctx.currentTime - o['start'] >= o['stopafter']) {
@@ -137,25 +138,24 @@
                 else bendy = undefined;
               }  
               else if(waves) {
-          
               //else {
                 var diff = ctx.currentTime - start;
                 var i = 10;
                 var stage='?';
                 if (diff <= attack) {
-                  i = 10 - Math.floor(diff/attack * 4);
+                  i = octaveOffset + 10 - Math.floor(diff/attack * 4);
                   stage='attack';
                 }
                 else if ( diff <= decay) {
-                  i = 6+Math.floor((diff-attack)/(decay-attack) * 4);
+                  i = octaveOffset + 6+Math.floor((diff-attack)/(decay-attack) * 4);
                   stage='decay';
                 }
                 else if (diff <= sustain) {
-                  i = 10 + Math.max(0,Math.floor((diff-decay)/(sustain-decay) * 6));
+                  i = octaveOffset + 10 + Math.max(0,Math.floor((diff-decay)/(sustain-decay) * 6));
                   stage='sustain';
                 }
                 else {//if (diff <= release) {
-                  i = 16 + Math.floor((diff-sustain)/(release - decay)  * 4);
+                  i = octaveOffset + 16 + Math.floor((diff-sustain)/(release - decay)  * 4);
                   if (i >= waves.length) {
                   i=waves.length-1;
                     /*
@@ -174,7 +174,7 @@
                   stage='else';
                 }
                 playWave = waves[i];
-                //console.log('i: ' + i + '\ndiff: '+ diff + '\nstage: '+ stage);
+                //console.log(/*'i: ' + i + '\ndiff: '+ diff + '\nstage: '+ stage + */'hz: '+hz+ '\toffset: ' + octaveOffset);
               //}
             }
             if (newWave && newWave != currWave) {
@@ -247,15 +247,22 @@ function ptsToWave(cpts,h) {
 }    
 
 
-function curvesRange(pts,h) {
+function curvesRange(pts) {
   var smooth = smoother(pts);
   var rough = rougher(pts);
-  var spts = curve(smooth,bezSize).reverse();
-  var rpts = curve(rough, bezSize).reverse();
+  
+  return lerpCurves(rough, smooth);
+}
+
+function lerpCurves(head, tail, interval) {
+  if (interval === undefined || isNaN(interval))
+    interval = 0.1;
+  var spts = curve(tail,bezSize).reverse();
+  var rpts = curve(head, bezSize).reverse();
   var cpts = curve(pts, bezSize).reverse();
 
   var curves = [];
-  for (var r = -1; r < 1; r+=0.1) {
+  for (var r = -1; r < 1; r+=interval) {
     //var wave;
     var pp=[];
     for (var i = 0; i < cpts.length; i++) {
