@@ -18,15 +18,6 @@ function Sofa() {
     self.samplerate = 44100;
   };
   
-  Sofa.prototype.periodslice = function(data,hz,maxi) {
-    var r = self.w/self.samplerate;
-    var ilen = Math.ceil((r*hz)/self.bits);
-    if (maxi + ilen >= data.length)
-      maxi=data.length-ilen-1;
-
-    return data.slice(maxi,maxi+ilen);
-  }
-  
   Sofa.prototype.enwave = function enwave(data) {
     return this.encode2wave(
             this.encode(data));
@@ -34,17 +25,23 @@ function Sofa() {
 
   Sofa.prototype.encode2wave = function encode2wave(encoding) {
     var data=encoding['samples'];
-    var hz = encoding['hz'];
+    /*var hz = encoding['hz'];
     var maxi = encoding['maxi'];
 
     var xs = self.periodslice(data,hz,maxi);
-    var pts = xs.map(function(e,i) { 
-                return newPt(i * (self.w/xs.length), self.h - e);
+    */
+    var pts = data.map(function(e,i,a) { 
+                return newPt(i * (self.w/(a.length)), self.h - e);
               });
-    window.pts=pts;
-
-    var ctx = getCtx();
+    pts.push(newPt(self.w,pts[0].y));
     var wave = reWave(pts,self.h);
+
+    //TODO dont set globals here!
+    clearControls(document.getElementById('boo'));
+    window.pts=pts;
+    newWave=wave;
+    drawControls(document.getElementById('boo'));
+    //drawWave(pts)
     return wave;
   }
 
@@ -56,12 +53,31 @@ function Sofa() {
     var samples = [];//new Uint8Array(self.samplesize);
     var hh = self.h / 2;
     var midp = hh - 1;
-    var min = max = maxi = 0;
-    for (var i = 0; i < self.samplesize; i++) {
+    var min = max = maxi = mini = 0;
+    for (var i = 0; i < data.length; i++) {
+      if(data[i] > max) {
+        max = data[i];
+        maxi = i;
+      }
+      else if(data[i] > min) {
+        min = data[i];
+        mini = i;
+      }
+    }
+    
+    var r = self.w / self.samplerate;
+    var plen = Math.ceil(self.samplerate / corr);
+    
+    if(maxi + plen >= data.length)
+      maxi = data.length - plen - 1;
+      
+    var ptct = Math.ceil(plen / self.bits);
+    
+    for (var i = 0; i < ptct; i++) {
       var step = i*self.bits;
-      var pt = parseInt(midp + hh * data[i*self.bits]);
-      var pre = i == 0 ? pt : parseInt(midp + hh * data[(i-1)*self.bits]);
-      var post = i == data.length - 1 ? pt : parseInt(midp + hh * data[(i+1)*self.bits]);
+      var pt = parseInt(midp + hh * data[maxi + i*self.bits]);
+      var pre = i == 0 ? pt : parseInt(midp + hh * data[maxi + (i-1)*self.bits]);
+      var post = i == data.length - 1 ? pt : parseInt(midp + hh * data[maxi + (i+1)*self.bits]);
       
       var predif = pt - pre;
       var postdif = post - pt;
@@ -75,13 +91,6 @@ function Sofa() {
 
       samples[i] = pt;
       
-      
-      if (data[step] > max) {
-        max = data[step];
-        maxi=i;
-      }
-      if (data[step] < min)
-        min = data[step];
     }
     
     

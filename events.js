@@ -219,21 +219,41 @@ function moveAdsr(e) {
 
 /////////////////////////////////////////////////
 
+var awave;
+var awaveid=0;
+
 function rept(e) {
   if(e.clientY <=10) return;
   var el = e.srcElement || e.target;
   var cx = e.clientX, cy = e.clientY;
   var h = boo.height.baseVal.value;
   var w = boo.width.baseVal.value;
-  if (el.id.indexOf('adsrl')==0) {
-    var i = el.id.substr(5);
-    var pt=newPt(1000-cx,200-cy);
-    var pre=adsrPts.slice(0,i)
-    var post=adsrPts.slice(i);
-    adsrPts=pre.concat([pt],post);
+  if (el.id.indexOf('adsr')==0) {
+    var idx=el.id.substr(4);
+    if(!isNaN(idx)) {
+      idx=parseInt(idx);
+      
+      var wave = joe.awave(idx);
+      awave = wave;
+      var prevel = document.getElementById('adsr'+awaveid);
+      prevel.className.baseVal = '';
+      awaveid = idx;
+      el.className.baseVal='sel';
+      if (wave) {
+        pts=wave.slice(0);
+        newWave=reWave(pts,h);
+      }
+    }
+    else if(idx.indexOf('adsrl')==0) {
+      var i = el.id.substr(5);
+      var pt=newPt(1000-cx,200-cy);
+      var pre=adsrPts.slice(0,i)
+      var post=adsrPts.slice(i);
+      adsrPts=pre.concat([pt],post);
 
-    joe = new Joe(adsrPts.map(function (e) { return newPt((1000-e.x)/1000,e.y/100); }));
-    drawAdsr(adsrPts);
+      joe = new Joe(adsrPts.map(function (e) { return newPt((1000-e.x)/1000,e.y/100); }));
+      drawAdsr(adsrPts);
+    }
   }
   else if(el.id.indexOf('control')==0) {
     // remove point
@@ -453,6 +473,12 @@ var framestep = bufstep = 0;
   }
   else if (e.keyCode==77) { //M - toggle mute
     mute = !mute;
+  }
+  else if (e.keyCode==80) { //P - set periodicwave from recorded audio for midi playback
+    if (mic && mic.frames && mic.frames.length > lastframe) {
+      var f = mic.frames[lastframe];
+      var w = sofa.enwave(f);
+    }
   }
   else if(e.keyCode>=48 && e.keyCode <=57) { //num key
     k = e.keyCode-48;
