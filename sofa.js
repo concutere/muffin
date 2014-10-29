@@ -31,9 +31,10 @@ function Sofa() {
     var xs = self.periodslice(data,hz,maxi);
     */
 
-    var pts = [newPt(0,127/*pts[0].y*/)].concat(data.map(function(e,i,a) { 
+    var pts = data.map(function(e,i,a) { 
                 return newPt(i * (self.w/(a.length-1)), self.h - e);
-              }));
+              });
+    pts[0]=newPt(0,127);
     pts[pts.length-1]=(newPt(self.w,127/*pts[0].y*/));
     var wave = reWave(pts,self.h);
 
