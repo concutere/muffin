@@ -30,10 +30,11 @@ function Sofa() {
 
     var xs = self.periodslice(data,hz,maxi);
     */
-    var pts = data.map(function(e,i,a) { 
-                return newPt(i * (self.w/(a.length)), self.h - e);
-              });
-    pts.push(newPt(self.w,pts[0].y));
+
+    var pts = [newPt(0,127/*pts[0].y*/)].concat(data.map(function(e,i,a) { 
+                return newPt(i * (self.w/(a.length-1)), self.h - e);
+              }));
+    pts[pts.length-1]=(newPt(self.w,127/*pts[0].y*/));
     var wave = reWave(pts,self.h);
 
     //TODO dont set globals here!
@@ -65,12 +66,28 @@ function Sofa() {
       }
     }
     
+    var zedxi = -1;
+    var z = maxi;
+    while (zedxi < 0) {
+      if((max >= 0 && data[z] < 0) ||
+          (max < 0 && data[z] >= 0)) {
+        zedxi = z+1;
+        break;
+      }
+      z--;
+    }
+    
+    if (zedxi >= 0)
+      maxi = zedxi;
+    
     var r = self.w / self.samplerate;
     var plen = Math.ceil(self.samplerate / corr);
     
     if(maxi + plen >= data.length)
       maxi = data.length - plen - 1;
-      
+
+    if(maxi + plen >= data.length)
+      maxi = data.length - plen - 1;      
     var ptct = Math.ceil(plen / self.bits);
     
     for (var i = 0; i < ptct; i++) {
