@@ -1,9 +1,9 @@
 ### Muffin
 
-Shaping sound waves, an interactive demo with high hopes!
+A Bezier synth using web MIDI
 
 
-http://concutere.com/bez/bez.html (Chrome only for now)
+http://concutere.com/bez/bez.html (Chrome only)
 
 
 ##### commands
