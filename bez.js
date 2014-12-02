@@ -244,6 +244,12 @@ function smoother(pts) {
   return npts;
 }
 
+
+function reverse(pts) {
+  return Array.prototype.reverse.call(pts);
+}
+
+
 function insine(pts,w,h) {
   var npts = [newPt(pts[0].x,pts[0].y)];
   for (var i = 1; i < pts.length; i++) {

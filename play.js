@@ -197,14 +197,14 @@
           //oscillator.detune.value = cents;
          
           //TODO move to draw
-          //drawGraph(analyser);
-          var freqs = new Uint8Array(analyser.frequencyBinCount);
+          drawGraph(analyser);
+          /*var freqs = new Uint8Array(analyser.frequencyBinCount);
           analyser.getByteFrequencyData(freqs);
           graphByteFreqs(freqs);
           var times = new Uint8Array(analyser.frequencyBinCount);
           analyser.getByteTimeDomainData(times);
           graphByteTimes(times);
-          
+          */
           requestAnimationFrame(recur);
         }
       };
@@ -221,10 +221,11 @@
 ///////////////////////////////////
 
 
-function reWave(pts,h) {
+function reWave(pts,h,dontDraw) {
   var cpts = curve(pts,bezSize).reverse();
 
-  drawWave(cpts);
+  if (dontDraw!==true)
+    drawWave(cpts);
   
   return ptsToWave(cpts,h);
 }
@@ -234,7 +235,7 @@ function ptsToWave(cpts,h) {
   var ctx = getCtx();
   var vals=vals||new Float32Array(cpts.length);
   for (var i = 0; i < cpts.length; i++) {
-    //TODO how can x be used in an intuitive way?
+    //TODO how can x be used in an intuitive way? just constrain it to be x0 < x1 < x2 ... ?
     // loop detection for clipping?
     // cusps?
     // pt diff?

@@ -104,6 +104,7 @@ function graphByteFreqs(freqs,clr,parent) {
     el.setAttribute('width', stepw);
     el.setAttribute('height',steph);
     if (!el.parentElement) {
+      el.setAttribute('fill-opacity',0.75);
       el.setAttribute('fill',clr ? clr : 'chartreuse');
       g.appendChild(el);
     }
@@ -132,7 +133,7 @@ function graphByteTimes(times,clr, parent) {
     el.setAttribute('width', stepw*2);
     el.setAttribute('height',h-y);
     if (!el.parentElement) {
-      el.setAttribute('fill',clr ? clr : '#b6b');
+      el.setAttribute('fill',clr ? clr : '#96b');
       g.appendChild(el);
     }
   }
@@ -283,13 +284,16 @@ function drawGraph(analyser) {
   var w= 1024;
   var h = 255;
 */
-  var freqs = new Uint8Array(analyser.frequencyBinCount);
-  analyser.getByteFrequencyData(freqs);
-  graphByteFreqs(freqs);
   var times = new Uint8Array(analyser.frequencyBinCount);
   analyser.getByteTimeDomainData(times);
   graphByteTimes(times);
-  
+  if (drawFreqs) drawGraphFreqs(analyser);
+}
+
+function drawGraphFreqs(analyser) {
+  var freqs = new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteFrequencyData(freqs);
+  graphByteFreqs(freqs);
 }
 
 function drawGraphData(data) {
@@ -299,6 +303,12 @@ function drawGraphData(data) {
 
   data=Array.prototype.map.call(data,function(e) { return 128 + e * 127; });
   //for(var i = 0; i < w && i < data.length; i++) {
-    graphByteTimes(data);
+   // graphByteTimes(data);
   //}
+  
 }
+
+
+//////////////////////////////////////////////////////////////
+
+
