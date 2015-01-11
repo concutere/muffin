@@ -1,9 +1,9 @@
   function gotMIDI(access) {
     m=access;
-    var inputs = m.inputs();
-    var outputs = m.outputs();
-    inputs[0].onmidimessage = midiMsg;
-    var o = outputs[0];
+    var input = m.inputs.values().next().value;
+    //var output = m.outputs.values().next().value;
+    input.onmidimessage = midiMsg;
+    //var o = outputs[0];
   }
   
   var bendy=undefined;
