@@ -1,6 +1,7 @@
 //event handlers
 var boo = document.getElementById('boo');
 var ctlid = undefined;
+var hasMidiInput = false;
 
 function hideEl(el, baseClass) {
   var g;
@@ -86,8 +87,12 @@ function init(e) {
 }
 
 function canMidi() {
-  return useMidi && (navigator.requestMIDIAccess) instanceof Function;
+  return (navigator.requestMIDIAccess) instanceof Function;
   //MIDI doesn't seem to be optional in chrome://flags anymore, need better test/switch
+}
+
+function hasMidi() {
+  return hasMidiInput && canMidi();
 }
 
 var adsrid=undefined;
@@ -99,7 +104,7 @@ function down (e) {
     ctlid = parseInt(el.id.substr(7));
     drag=true;
     document.addEventListener('mousemove',move);
-    if (!canMidi())
+    if (!hasMidi())
       deftone = play(initHz,1);
   }
   /*else if(el.id=='pitch') {

@@ -1,13 +1,16 @@
   function gotMIDI(access) {
     m=access;
-    if (m.inputs.size < 1) {
-      return false;
-    }
-    else {
-      var input = m.inputs.values().next().value;
-      //var output = m.outputs.values().next().value;
-      input.onmidimessage = midiMsg;
-      //var o = outputs[0];
+    hasMidiInput = m.inputs.size >= 1;
+    if(hasMidiInput) {
+      try {
+        var input = m.inputs.values().next().value;
+        //var output = m.outputs.values().next().value;
+        input.onmidimessage = midiMsg;
+        //var o = outputs[0];
+      }
+      catch (e) {
+        hasMidiInput = false; //is this always correct?
+      }
     }
   }
   
