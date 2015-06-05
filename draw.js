@@ -140,13 +140,23 @@ function graphByteTimes(times,clr, parent) {
 }
 
 function clearFreqs(g) {
+    /* why does the following forEach only return even indexed elements?
+  if (g && g.childNodes) {
+    Array.prototype.forEach.call(g.childNodes, function(el) {{console.log(el.id);g.removeChild(el);} });
+  }*/
   for (var i = 0; i <= 1024; i++) {
     var el = document.getElementById('bytefreq'+i);
-    if (el)
+    if (el) {
       g.removeChild(el);
+    }
+    el = document.getElementById('bytetime'+i);
+    if (el) {
+      g.removeChild(el);
+    }
     el = document.getElementById('bytefreqmicgraph'+i);
-    if (el)
+    if (el) {
       g.removeChild(el);
+    }
   }
 }
 
