@@ -86,7 +86,8 @@ function init(e) {
 }
 
 function canMidi() {
-  return (navigator.requestMIDIAccess) instanceof Function;
+  return useMidi && (navigator.requestMIDIAccess) instanceof Function;
+  //MIDI doesn't seem to be optional in chrome://flags anymore, need better test/switch
 }
 
 var adsrid=undefined;

@@ -4,6 +4,7 @@
  
  Sofa encodes audio as time domain / waveform data
  
+ TODO remove (explicit) dependencies on draw.js, play.js
 ***/ 
 
 

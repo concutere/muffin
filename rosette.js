@@ -30,7 +30,6 @@ function Rosette(start) {
       var end = ant.dur;
       if (isNaN(end)) {
         end = ctx.currentTime - this.start;
-        //console.log('defaulting end');
       }
       console.log('pooting ' + ant.pitch + ' at ' + ant.start + ' for ' + end);
 

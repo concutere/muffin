@@ -284,10 +284,15 @@ function drawGraph(analyser) {
   var w= 1024;
   var h = 255;
 */
-  var times = new Uint8Array(analyser.frequencyBinCount);
-  analyser.getByteTimeDomainData(times);
-  graphByteTimes(times);
-  if (drawFreqs) drawGraphFreqs(analyser);
+
+  if (drawFreqs) {
+    drawGraphFreqs(analyser);
+  }
+  else {
+    var times = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteTimeDomainData(times);
+    graphByteTimes(times);
+  }
 }
 
 function drawGraphFreqs(analyser) {
