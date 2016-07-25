@@ -39,7 +39,7 @@ function addBC(svg,name, x, y) {
 }
   
 function addPath(svg,pts) {
-  var p = document.createElementNS(svgNS,"path");
+  var p = document.createElementNS(svgNS,"polyline");
   svg.appendChild(p);
   p.id='path';
   p.setAttribute('stroke','slategray');
@@ -198,23 +198,27 @@ function drawWave(pts) {
   var svg = document.getElementById('boo');
   
   var p = document.getElementById('path');
-  if (p.pathSegList.length != pts.length+1) {
-    p.pathSegList.clear();
-    var last = p.createSVGPathSegMovetoAbs(pts[0].x,pts[0].y);
-    p.pathSegList.appendItem(last);
+  if (p.points.length != pts.length+1) {
+    p.points.clear();
+    var last = svg.createSVGPoint();
+    last.x=pts[0].x;
+    last.y=pts[0].y;
+    p.points.appendItem(last);
     for (var i = 0; i < pts.length; i++) {
       //todo colinearity test for better line use
       //if(Math.abs(pts[i].x - last.x) > 1 || Math.abs(pts[i].y - last.y) > 1) {
         last = pts[i];
         if(last) {
-        var seg = p.createSVGPathSegLinetoAbs(last.x,last.y);
-        p.pathSegList.appendItem(seg);
+        var seg = svg.createSVGPoint();
+        seg.x = last.x;
+        seg.y = last.y;
+        p.points.appendItem(seg);
       }
     }
   }
   else {
     for (var i = 0; i < pts.length; i++) {
-      var seg = p.pathSegList.getItem(i+1);
+      var seg = p.points.getItem(i+1);
       if(seg.x != pts[i].x) 
         seg.x=pts[i].x;
       if (seg.y != pts[i].y)  
